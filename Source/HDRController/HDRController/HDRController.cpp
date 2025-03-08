@@ -76,7 +76,7 @@ static bool UseNewApi()
 			return true;
 		else if (current.dwMinorVersion == 0)
 		{
-			if (current.dwBuildNumber >= 2600)
+			if (current.dwBuildNumber >= 26000)
 				return true;
 		}
 	}
@@ -189,7 +189,7 @@ static void SetHDR(UINT32 uid, bool enabled)
 	LONG result{ ERROR_SUCCESS };
 	DISPLAYCONFIG_MODE_INFO identifier = GetDisplayIdentifier(uid);
 	// Windows 11 24H2 or newer (SDK 10.0.26100.0)
-	if (UseNewApi)
+	if (UseNewApi())
 	{
 		DISPLAYCONFIG_SET_HDR_STATE setHdrState = {};
 		setHdrState.header.type =
@@ -220,7 +220,7 @@ static bool GetHDRStatus(UINT32 uid)
 	bool hdrEnabled{ false };
 	DISPLAYCONFIG_MODE_INFO identifier = GetDisplayIdentifier(uid);
 	// Windows 11 24H2 or newer (SDK 10.0.26100.0)
-	if (UseNewApi)
+	if (UseNewApi())
 	{
 		DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 getColorInfo2 = {};
 		getColorInfo2.header.type = static_cast<DISPLAYCONFIG_DEVICE_INFO_TYPE>(

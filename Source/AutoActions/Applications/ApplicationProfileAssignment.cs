@@ -11,13 +11,13 @@ namespace AutoActions
     public class ApplicationProfileAssignment : BaseViewModel
     {
         private int _position = -1;
-        private ApplicationItem _application = null;
+        private IApplicationItem _application = null;
 
 
         private static SortableObservableCollection<ApplicationProfileAssignment> Assignments => Globals.Instance.Settings.ApplicationProfileAssignments;
 
         [JsonProperty]
-        public ApplicationItem Application { get => _application; set { _application = value; OnPropertyChanged(); }
+        public IApplicationItem Application { get => _application; set { _application = value; OnPropertyChanged(); }
         }
 
         private Guid _profileGuid = Guid.Empty;
@@ -62,13 +62,13 @@ namespace AutoActions
 
         }
 
-        private ApplicationProfileAssignment(ApplicationItem application)
+        private ApplicationProfileAssignment(IApplicationItem application)
         {
             Application = application;
         }
 
 
-        public static ApplicationProfileAssignment NewAssigment(ApplicationItem application)
+        public static ApplicationProfileAssignment NewAssigment(IApplicationItem application)
         {
             ApplicationProfileAssignment assigment = new ApplicationProfileAssignment(application);
             assigment.Position = GetNextPosition();

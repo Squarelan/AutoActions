@@ -21,21 +21,21 @@ namespace AutoActions.UWP
         private const string xboxPassAppFN = "Microsoft.GamingApp_8wekyb3d8bbwe";
 
 
-        public static UWPApp GetUWPApp(string packageNameOrFamilyPackageName, string identity = "")
+        public static UWPAppEntry GetPackage(string packageNameOrFamilyPackageName, string identity = "")
         {
             var package = manager.FindPackageForUser(WindowsIdentity.GetCurrent().User.Value, packageNameOrFamilyPackageName);
             if (package == null)
                 return GetUWPAppCompatible(packageNameOrFamilyPackageName, identity);
-            return new UWPApp(package);
+            return new UWPAppEntry(package);
         }
 
-        private static UWPApp GetUWPAppCompatible(string familyPackageName, string identity)
+        private static UWPAppEntry GetUWPAppCompatible(string familyPackageName, string identity)
         {
             foreach (var package in manager.FindPackagesForUser(WindowsIdentity.GetCurrent().User.Value))
             {
                 try
                 {
-                    UWPApp uwpApp = new UWPApp(package);
+                    UWPAppEntry uwpApp = new UWPAppEntry(package);
                     if (uwpApp.FamilyPackageName.Equals(familyPackageName) && (string.IsNullOrEmpty(identity) || uwpApp.Identity.Equals(identity)))
                         return uwpApp;
                 }
@@ -45,12 +45,12 @@ namespace AutoActions.UWP
         }
 
 
-        public static List<ApplicationItem> GetUWPApps()
+        public static List<UWPApplicationItem> GetUWPApps()
         {
 
             Globals.Logs.Add($"Retrieving UWP apps...", false);
 
-            List<ApplicationItem> uwpApps = new List<ApplicationItem>();
+            List<UWPApplicationItem> uwpApplications = new List<UWPApplicationItem>();
             IEnumerable<Package> packages = manager.FindPackagesForUser(WindowsIdentity.GetCurrent().User.Value);
             try
             {
@@ -76,16 +76,16 @@ namespace AutoActions.UWP
 
                     try
                     {
-                        UWPApp uwpApp = new UWPApp(package);
-                        if (!string.IsNullOrEmpty(uwpApp.ApplicationID))
-                         uwpApps.Add(new ApplicationItem(uwpApp));
+                        var uwpEntry =  new UWPAppEntry(package);
+                        if (!string.IsNullOrEmpty(uwpEntry.ApplicationID))
+                         uwpApplications.Add(new UWPApplicationItem(uwpEntry));
                     }
                     catch
                     {
                         continue;
                     }
                 }
-                return uwpApps.OrderBy(u => u.DisplayName).ToList();
+                return uwpApplications.OrderBy(u => u.DisplayName).ToList();
             }
             catch (Exception ex)
             {

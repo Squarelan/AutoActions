@@ -294,6 +294,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Applications\ExeApplicationItem.cs" />
+    <Compile Include="Applications\UWP\UWPApplicationAdder.cs" />
+    <Compile Include="Applications\ApplicationAdderBase.cs" />
+    <Compile Include="Applications\IApplicationItem.cs" />
     <Compile Include="CheckUpdateResult.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="LoopManager.cs" />
@@ -303,7 +307,8 @@
     <Compile Include="Theming\ThemeResourceDirectory.cs" />
     <Compile Include="Theming\Theme.cs" />
     <Compile Include="UserAppSettings.cs" />
-    <Compile Include="UWP\WWAHostHandler.cs" />
+    <Compile Include="Applications\UWP\UWPAppEntry.cs" />
+    <Compile Include="Applications\UWP\WWAHostHandler.cs" />
     <Compile Include="Views\StatusView.xaml.cs">
       <DependentUpon>StatusView.xaml</DependentUpon>
     </Compile>
@@ -372,16 +377,15 @@
     <Compile Include="Views\UWPApplicationDialogView.xaml.cs">
       <DependentUpon>UWPApplicationDialogView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UWP\UWPApplicationDialog.cs" />
+    <Compile Include="Applications\UWP\UWPApplicationDialog.cs" />
     <Compile Include="Applications\ApplicationState.cs" />
     <Compile Include="Views\MonitorManagerView.xaml.cs">
       <DependentUpon>MonitorManagerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="NightLightManager.cs" />
     <Compile Include="TrayMenuHelper.cs" />
-    <Compile Include="UWP\AppxManifest.cs" />
-    <Compile Include="UWP\UWPAppsManager.cs" />
-    <Compile Include="UWP\UWPApp.cs" />
+    <Compile Include="Applications\UWP\AppxManifest.cs" />
+    <Compile Include="Applications\UWP\UWPAppsManager.cs" />
     <Page Include="Controls\1_Colors.xaml">
       <SubType>Designer</SubType>
       <Generator>XamlIntelliSenseFileGenerator</Generator>
@@ -488,11 +492,11 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Applications\ApplicationAdder.cs" />
+    <Compile Include="Applications\ExeApplicationAdder.cs" />
     <Compile Include="Views\ApplicationAdderView.xaml.cs">
       <DependentUpon>ApplicationAdderView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Applications\ApplicationItem.cs" />
+    <Compile Include="Applications\UWP\UWPApplicationItem.cs" />
     <Compile Include="ProcessWatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

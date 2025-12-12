@@ -11,7 +11,7 @@ using Windows.ApplicationModel;
 
 namespace AutoActions.UWP
 {
-    public class UWPApp
+    public class UWPAppEntry
     {
         public string Name { get; private set; } = string.Empty;
         public string Executable { get; private set; } = string.Empty;
@@ -42,12 +42,12 @@ namespace AutoActions.UWP
         public string IconPath { get; private set; } = string.Empty;
 
 
-        private UWPApp()
+        private UWPAppEntry()
         {
 
         }
 
-        public UWPApp(Package package)
+        public UWPAppEntry(Package package)
         {
             ReadAppxManifest(package);
         }
@@ -101,10 +101,32 @@ namespace AutoActions.UWP
             }
         }
 
+       
+
+        private string GetNameOfStrangeMicrosoftAppxManifest(AppxManifest appxManifest)
+        {
+            string name = appxManifest.Identity.Name;
+            name = name.Replace("Microsoft.", "");
+            string newName = string.Empty;
+            for (int i = 0; i < name.Length; i++)
+            {
+                if (i == 0)
+                {
+                    newName += name[i];
+                }
+                else if (char.IsUpper(name[i]))
+                    newName += $" {name[i]}";
+                else
+                    newName += name[i];
+            }
+            return newName;
+
+        }
+
         private static string GetIconPath(string iconPath)
         {
             FileInfo fi = new FileInfo(iconPath);
-            if (fi.Exists) 
+            if (fi.Exists)
                 return fi.FullName;
             string fileName = fi.Name.Replace(fi.Extension, "");
             string scale400 = $"{Path.Combine(fi.Directory.FullName, fi.Directory.FullName, fileName)}.scale-400{fi.Extension}";
@@ -127,25 +149,6 @@ namespace AutoActions.UWP
             return string.Empty;
         }
 
-        private string GetNameOfStrangeMicrosoftAppxManifest(AppxManifest appxManifest)
-        {
-            string name = appxManifest.Identity.Name;
-            name = name.Replace("Microsoft.", "");
-            string newName = string.Empty;
-            for (int i = 0; i < name.Length; i++)
-            {
-                if (i == 0)
-                {
-                    newName += name[i];
-                }
-                else if (char.IsUpper(name[i]))
-                    newName += $" {name[i]}";
-                else
-                    newName += name[i];
-            }
-            return newName;
-
-        }
 
         public override string ToString()
         {

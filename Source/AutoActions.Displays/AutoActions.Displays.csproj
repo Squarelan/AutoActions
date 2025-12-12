@@ -229,9 +229,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\AutoActions.Core\AutoActions.Core.csproj">
       <Project>{5b5fed18-5725-4daf-b5aa-b0fe328c0f16}</Project>
       <Name>AutoActions.Core</Name>

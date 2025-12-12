@@ -9,13 +9,13 @@ namespace AutoActions.UWP
     public class UWPApplicationDialog : DialogViewModelBase
     {
         private bool _canCreate = false;
-        private ObservableCollection<ApplicationItem> _uwpApplications = new ObservableCollection<ApplicationItem>();
-        public ObservableCollection<ApplicationItem> UWPApplications { get => _uwpApplications;  set { _uwpApplications = value; OnPropertyChanged(); } }
+        private ObservableCollection<UWPApplicationItem> _uwpApplications = new ObservableCollection<UWPApplicationItem>();
+        public ObservableCollection<UWPApplicationItem> UWPApplications { get => _uwpApplications;  set { _uwpApplications = value; OnPropertyChanged(); } }
 
 
-        private ApplicationItem applicationItem = null;
+        private UWPApplicationItem applicationItem = null;
 
-        public ApplicationItem ApplicationItem { get => applicationItem;  set { applicationItem = value; OnPropertyChanged(); } }
+        public UWPApplicationItem ApplicationItem { get => applicationItem;  set { applicationItem = value; OnPropertyChanged(); } }
 
 
 
@@ -27,7 +27,7 @@ namespace AutoActions.UWP
         public UWPApplicationDialog()
         {
             Title = ProjectLocales.ChooseUWPApplication;
-            foreach (ApplicationItem app in UWP.UWPAppsManager.GetUWPApps())
+            foreach (UWPApplicationItem app in UWP.UWPAppsManager.GetUWPApps())
                 UWPApplications.Add(app);
             CreateRelayCommands();
         }

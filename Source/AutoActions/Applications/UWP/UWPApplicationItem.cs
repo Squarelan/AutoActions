@@ -3,7 +3,9 @@ using CodectoryCore.UI.Wpf;
 using CodectoryCore.Windows;
 using CodectoryCore.Windows.FileSystem;
 using CodectoryCore.Windows.Icons;
+using ControlzEx.Standard;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,16 +16,18 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
+using Windows.ApplicationModel;
 
 namespace AutoActions
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class ApplicationItem : BaseViewModel, IEquatable<ApplicationItem>
+    public class UWPApplicationItem : BaseViewModel, IEquatable<UWPApplicationItem>, IApplicationItem
     {
         [JsonProperty]
-        public bool PackageError { get; set; } = false;
-        private bool _isUWP = false;
+        public bool PackageError { get; private set; } = false;
         private bool _isUWPWebApp = false;
 
         private string displayName;
@@ -36,6 +40,8 @@ namespace AutoActions
         private string _uwpApplicationID = string.Empty;
         private string _uwpIconPath = string.Empty;
         private string _uwpIdentity = string.Empty;
+        Dictionary<UWPApplicationItem, ApplicationState> _lastAppStates = new Dictionary<UWPApplicationItem, ApplicationState>();
+
 
 
         [JsonProperty]
@@ -43,89 +49,89 @@ namespace AutoActions
         [JsonProperty]
         public string ApplicationName { get => _applicationName; set { _applicationName = value; OnPropertyChanged(); } }
         [JsonProperty(Order = 1)]
-        public string ApplicationFilePath {
-            get => _applicationFilePath; 
-            set { _applicationFilePath = value;  try {  if (!IsUWP && !IsUWPWepApp)  Icon = IconHelper.GetFileIcon(value); } catch { } OnPropertyChanged(); } }
+        public string ApplicationFilePath
+        {
+            get => _applicationFilePath;
+            set { _applicationFilePath = value; OnPropertyChanged(); }
+        }
         // public bool RestartProcess { get => _restartProcess; set { _restartProcess = value; OnPropertyChanged(); } }
-        [JsonProperty(Order =0)]
-        public bool IsUWP { get => _isUWP; set { _isUWP = value; OnPropertyChanged(); } }
         [JsonProperty(Order = 0)]
-        public bool IsUWPWepApp { get => _isUWPWebApp; set { _isUWPWebApp = value; OnPropertyChanged(); } }
+        public bool IsWebApp { get => _isUWPWebApp; set { _isUWPWebApp = value; OnPropertyChanged(); } }
         public Bitmap Icon { get => icon; set { icon = value; OnPropertyChanged(); } }
         [JsonProperty(Order = 1)]
-        public string UWPFullPackageName { 
-            get => _uwpFullPackageName; 
-            set { _uwpFullPackageName = value;  OnPropertyChanged(); LoadUWPData(); } 
+        public string FullPackageName
+        {
+            get => _uwpFullPackageName;
+            set { _uwpFullPackageName = value; OnPropertyChanged(); LoadUWPData(); }
         }
 
         [JsonProperty(Order = 0)]
-        public string UWPFamilyPackageName
+        public string FamilyPackageName
         {
             get => _uwpFamilyPackageName;
             set { _uwpFamilyPackageName = value; OnPropertyChanged(); }
         }
 
         [JsonProperty(Order = 2)]
-        public string UWPApplicationID { 
-            get => _uwpApplicationID; 
-            set { _uwpApplicationID = value; OnPropertyChanged(); if (string.IsNullOrEmpty(UWPFullPackageName)) LoadUWPData(); } }
-        public string UWPIconPath { 
-            get => _uwpIconPath; 
-            set { _uwpIconPath = value; try { if (IsUWP ||IsUWPWepApp) Icon = new Bitmap(Bitmap.FromFile(value)); } catch { }OnPropertyChanged(); } }
+        public string ApplicationID
+        {
+            get => _uwpApplicationID;
+            set { _uwpApplicationID = value; OnPropertyChanged(); if (string.IsNullOrEmpty(FullPackageName)) LoadUWPData(); }
+        }
+        public string IconPath
+        {
+            get => _uwpIconPath;
+            set { _uwpIconPath = value; OnPropertyChanged(); }
+        }
 
         [JsonProperty(Order = 0)]
-        public string UWPIdentity { get => _uwpIdentity; set { _uwpIdentity = value; OnPropertyChanged(); } }
+        public string Identity { get => _uwpIdentity; set { _uwpIdentity = value; OnPropertyChanged(); } }
 
-        private ApplicationItem()
+        private UWPApplicationItem()
         {
 
         }
-        public ApplicationItem(string displayName, string applicationFilePath)
+
+        public UWPApplicationItem(UWPAppEntry appEntry)
         {
             DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
-            ApplicationFilePath = applicationFilePath ?? throw new ArgumentNullException(nameof(applicationFilePath));
+            ApplicationFilePath = appEntry.ExecutablePath ?? throw new ArgumentNullException(nameof(appEntry.ExecutablePath));
             ApplicationName = new FileInfo(ApplicationFilePath).Name.Replace(".exe", "");
+            IsWebApp = appEntry.IsWebApp;
+            FamilyPackageName = appEntry.FamilyPackageName;
+            _uwpFullPackageName = appEntry.FullPackageName;
+            IconPath = appEntry.IconPath;
+            ApplicationID = appEntry.ApplicationID;
+            Identity = appEntry.Identity;
+
         }
 
-        public ApplicationItem(UWPApp uwpApp) : this(uwpApp.Name, uwpApp.ExecutablePath)
-        {
-            IsUWP = true;
-            IsUWPWepApp = true;
-            UWPFamilyPackageName = uwpApp.FamilyPackageName;
-            _uwpFullPackageName = uwpApp.FullPackageName;
-            UWPIconPath = uwpApp.IconPath;
-            UWPApplicationID = uwpApp.ApplicationID;
-            UWPIdentity = uwpApp.Identity;
-        }
 
         private void LoadUWPData()
         {
             string packageNotFound = "[PackageNotFound]_";
 
-            if (!IsUWP && !IsUWPWepApp)
-                return;
-            UWPApp uwpApp;
-            uwpApp = UWPAppsManager.GetUWPApp(UWPFamilyPackageName, UWPIdentity);
+            UWPAppEntry uwpApp;
+            uwpApp = UWPAppsManager.GetPackage(FamilyPackageName, Identity);
             if (uwpApp == null)
             {
                 if (PackageError)
                     return;
                 DisplayName = $"{packageNotFound}{DisplayName}";
-                UWPIconPath = "";
-                UWPIdentity = "";
+                IconPath = "";
+                Identity = "";
                 PackageError = true;
                 return;
             }
             PackageError = false;
             if (DisplayName.StartsWith(packageNotFound))
                 DisplayName = DisplayName.Substring(packageNotFound.Length, DisplayName.Length - packageNotFound.Length);
-            UWPFamilyPackageName = uwpApp.FamilyPackageName;
+            FamilyPackageName = uwpApp.FamilyPackageName;
             _uwpFullPackageName = uwpApp.FullPackageName;
-            UWPIconPath = uwpApp.IconPath;
-            UWPIdentity = uwpApp.Identity;
+            IconPath = uwpApp.IconPath;
+            Identity = uwpApp.Identity;
         }
 
-        Dictionary<ApplicationItem, ApplicationState> _lastAppStates = new Dictionary<ApplicationItem, ApplicationState>();
 
         public void Restart()
         {
@@ -135,7 +141,7 @@ namespace AutoActions
                 foreach (Process process in Process.GetProcessesByName(ApplicationName).ToList())
                     if (process.StartTime < Process.GetCurrentProcess().StartTime)
                     {
-                        Globals.Logs.Add($"Won't restart application {ApplicationName} as it was running before { ProjectResources.ProjectLocales.AutoActions}.", false);
+                        Globals.Logs.Add($"Won't restart application {ApplicationName} as it was running before {ProjectResources.ProjectLocales.AutoActions}.", false);
 
                         return;
                     }
@@ -155,16 +161,7 @@ namespace AutoActions
             Globals.Logs.Add($"Start application {ApplicationName}", false);
             try
             {
-                if (IsUWP)
-                {
-                    UWP.UWPAppsManager.StartUWPApp(UWPFamilyPackageName, UWPApplicationID);
-                }
-                else
-                {
-                    Process process = new Process();
-                    process.StartInfo = new ProcessStartInfo(ApplicationFilePath);
-                    process.Start();
-                }
+                UWP.UWPAppsManager.StartUWPApp(FamilyPackageName, ApplicationID);
                 System.Threading.Thread.Sleep(2500);
                 var processes = Process.GetProcessesByName(ApplicationName).ToList();
                 if (processes.Count > 0)
@@ -191,10 +188,10 @@ namespace AutoActions
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as ApplicationItem);
+            return Equals(obj as UWPApplicationItem);
         }
 
-        public bool Equals(ApplicationItem other)
+        public bool Equals(UWPApplicationItem other)
         {
             return other != null &&
                    _applicationFilePath == other._applicationFilePath;
@@ -202,17 +199,17 @@ namespace AutoActions
 
         public override int GetHashCode()
         {
-            int hashCode = 734317580;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(_applicationFilePath);
+            int hashCode = 73345580;
+            hashCode = hashCode * -152135495 + EqualityComparer<string>.Default.GetHashCode(_applicationFilePath);
             return hashCode;
         }
 
-        public static bool operator ==(ApplicationItem left, ApplicationItem right)
+        public static bool operator ==(UWPApplicationItem left, UWPApplicationItem right)
         {
-            return EqualityComparer<ApplicationItem>.Default.Equals(left, right);
+            return EqualityComparer<UWPApplicationItem>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(ApplicationItem left, ApplicationItem right)
+        public static bool operator !=(UWPApplicationItem left, UWPApplicationItem right)
         {
             return !(left == right);
         }

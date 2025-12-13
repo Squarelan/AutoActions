@@ -1,21 +1,5 @@
-﻿using AutoActions.Threading;
-using CCD;
-using CCD.Enum;
-using CCD.Struct;
-using CodectoryCore;
-using CodectoryCore.UI.Wpf;
-using NvAPIWrapper.Display;
-using NvAPIWrapper.Native;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Drawing;
+﻿using System;
 using System.Linq;
-using System.Management;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Windows.Threading;
 
 namespace AutoActions.Displays
 {

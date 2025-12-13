@@ -21,9 +21,13 @@ namespace AutoActions
         public bool Initialized { get; private set; }
         TaskbarIcon _trayMenu;
 
+        // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
         private MenuItem _openButton;
+        // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
         private MenuItem _closeButton;
+        // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
         private MenuItem _appplications;
+        // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
         private MenuItem _actions;
 
 
@@ -45,12 +49,15 @@ namespace AutoActions
                 _trayMenu.Visibility = Visibility.Visible;
                 _trayMenu.ToolTipText = ProjectLocales.AutoActions;
                 _trayMenu.Icon = ProjectLocales.MainIcon;
+                // TODO ContextMenu wird nicht mehr unterstützt. Verwenden Sie stattdessen ContextMenuStrip. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
                 ContextMenu contextMenu = new ContextMenu();
+                // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
                 _openButton = new MenuItem()
                 {
                     Header = ProjectLocales.Open
                 };
 
+                // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
                 _closeButton = new MenuItem()
                 {
                     Header = ProjectLocales.Shutdown
@@ -79,6 +86,7 @@ namespace AutoActions
 
         private void InitializeActionsMenuItem(ContextMenu contextMenu)
         {
+            // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
             _actions = new MenuItem()
             {
                 Header = ProjectLocales.Actions
@@ -114,6 +122,7 @@ namespace AutoActions
                 _actions.Items.Clear();
                 foreach (var action in Globals.Instance.Settings.ActionShortcuts)
                 {
+                    // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
                     MenuItem item = new MenuItem();
                     item.Header = action.ShortcutName;
                     item.Click += (o, e) => action.RunAction();
@@ -124,6 +133,7 @@ namespace AutoActions
 
         private void InitializeApplicationsMenuItem(ContextMenu contextMenu)
         {
+            // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
             _appplications= new MenuItem()
             {
                 Header = ProjectLocales.Applications
@@ -160,6 +170,7 @@ namespace AutoActions
                 _appplications.Items.Clear();
                 foreach (var assignment in Globals.Instance.Settings.ApplicationProfileAssignments)
                 {
+                    // TODO MenuItem wird nicht mehr unterstützt. Verwenden Sie stattdessen ToolStripMenuItem. Weitere Informationen finden Sie unter: https://docs.microsoft.com/en-us/dotnet/core/compatibility/winforms#removed-controls
                     MenuItem item = new MenuItem();
                     ImageSource imageSource = (ImageSource)converter.Convert(assignment.Application.Icon, typeof(ImageSource), null, System.Globalization.CultureInfo.CurrentUICulture);
                     item.Icon = new System.Windows.Controls.Image

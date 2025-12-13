@@ -9,7 +9,7 @@ using Microsoft.Win32;
 
 namespace AutoActions.Threading
 {
-    public class ThreadManager
+    public class ThreadManager: IDisposable
     {
 
         public event EventHandler<string> NewLog;
@@ -117,6 +117,11 @@ namespace AutoActions.Threading
                 if (thread.ManagedThreadIsActive)
                     thread.StopManagedThread();
             NewLog?.BeginInvoke(this, "Threads stopped.", null, null);
+        }
+
+        public void Dispose()
+        {
+            SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
         }
     }
 }

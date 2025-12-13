@@ -1,5 +1,4 @@
-﻿using CCD.Enum;
-using NvAPIWrapper;
+﻿using NvAPIWrapper;
 using NvAPIWrapper.Display;
 using NvAPIWrapper.GPU;
 using NvAPIWrapper.Native;

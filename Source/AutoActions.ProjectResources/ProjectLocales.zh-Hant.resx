@@ -228,7 +228,7 @@
   </data>
   <data name="DisplayAction" xml:space="preserve"><value>顯示器動作</value>
   </data>
-  <data name="DisplayName" xml:space="preserve"><value>顯示器名稱</value>
+  <data name="DisplayName" xml:space="preserve"><value>顯示名稱</value>
   </data>
   <data name="Displays" xml:space="preserve"><value>顯示器</value>
   </data>

@@ -31,6 +31,10 @@ namespace AutoActions
             {
                 var application = new App();
                 application.InitializeComponent();
+                // Remove the leftover "Update" folder from a previous auto-update. AutoUpdate()
+                // copies the whole app there to run the updater from, but never cleans it up
+                // afterwards, so it lingered in the install directory. Safe to delete on startup.
+                CleanupUpdateFolder();
                 Globals.Instance.LoadSettings();
                 // Apply the saved UI language before any window is created.
                 // Empty setting = follow the Windows system locale (automatic detection).
@@ -40,6 +44,21 @@ namespace AutoActions
             else
             {
                 MessageBox.Show(ProjectLocales.AlreadyRunning);
+            }
+        }
+
+        private static void CleanupUpdateFolder()
+        {
+            try
+            {
+                string updatePath = System.IO.Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory, "Update");
+                if (System.IO.Directory.Exists(updatePath))
+                    System.IO.Directory.Delete(updatePath, true);
+            }
+            catch
+            {
+                // A locked leftover file must never block startup; the folder is harmless.
             }
         }
 

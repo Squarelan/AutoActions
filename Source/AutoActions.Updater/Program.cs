@@ -78,19 +78,27 @@ namespace AutoActions.Updater
                 if (process.StartInfo.WorkingDirectory.ToUpperInvariant().Equals(targetFolder.ToUpperInvariant()))
                     process.Kill();
             List<string> filesToCopy = GetAllFiles(temporaryFolder);
-            if (filesToCopy.Contains(Path.Combine(temporaryFolder, "UpdateData.json")))
-                filesToCopy.Remove(Path.Combine(temporaryFolder, "UpdateData.json"));
-            if (filesToCopy.Contains(Path.Combine(temporaryFolder, "AutoActions.Updater.exe")))
-                filesToCopy.Remove(Path.Combine(temporaryFolder, "AutoActions.Updater.exe"));
-            if (filesToCopy.Contains(Path.Combine(temporaryFolder, "AutoActions.Updater.pdb")))
-            filesToCopy.Remove(Path.Combine(temporaryFolder, "AutoActions.Updater.pdb"));
+            // Only the update manifest is skipped. The updater's own exe/pdb ARE copied now,
+            // so a fixed updater replaces the old one on the next update. This is safe because
+            // the running updater is the copy in the "Update" folder, not the one in
+            // targetFolder that we overwrite here.
+            filesToCopy.Remove(Path.Combine(temporaryFolder, "UpdateData.json"));
             Console.WriteLine($"Updating files...");
 
             foreach (string file in filesToCopy)
             {
-
-                string targetFileName = Path.Combine(targetFolder, Path.GetFileName(file));
+                // Preserve the sub-directory layout (e.g. zh-Hans\, zh-Hant\, de\ satellite
+                // assemblies). The old code used only Path.GetFileName(), which flattened every
+                // file into the root; localized resource DLLs share the same name across cultures,
+                // so they collided and .NET could no longer locate them -> translations silently
+                // reverted to English after every auto-update.
+                string relativePath = file.Substring(temporaryFolder.Length)
+                    .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                string targetFileName = Path.Combine(targetFolder, relativePath);
                 Console.WriteLine($"Updating {targetFileName}");
+                string targetSubFolder = Path.GetDirectoryName(targetFileName);
+                if (!Directory.Exists(targetSubFolder))
+                    Directory.CreateDirectory(targetSubFolder);
                 if (File.Exists(targetFileName))
                     File.Delete(targetFileName);
                 File.Move(file, targetFileName);

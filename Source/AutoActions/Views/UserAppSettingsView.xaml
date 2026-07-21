@@ -42,6 +42,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
 
                 </Grid.RowDefinitions>
@@ -71,6 +72,9 @@
                 <CheckBox  IsChecked="{Binding HideSplashScreenOnAutoUpdate}" IsEnabled="{Binding AutoUpdate}" Grid.Column="1" Grid.Row="7" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5"/>
                 <CheckBox IsChecked="{Binding GlobalAutoActions}" Grid.Column="1" Grid.Row="8" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5"/>
                 <ComboBox Grid.Column="1" Grid.Row="9" MaxWidth="250"  HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5" SelectedValuePath="Name" DisplayMemberPath="Name" SelectedValue="{Binding DefaultProfile, Mode=TwoWay}" SelectedItem="{Binding DefaultProfile, Mode=TwoWay}" ItemsSource="{Binding ApplicationProfiles}" Background="Black"  />
+
+                <TextBlock Style="{StaticResource DefaultTextBlock}"   Text="{x:Static pres:ProjectLocales.Language}"  Grid.Column="0" Grid.Row="10" Margin="10,3,3,3" HorizontalAlignment="Left"  VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="1" Grid.Row="10" MaxWidth="250" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5" SelectedValuePath="CultureName" DisplayMemberPath="DisplayName" SelectedValue="{Binding Language, Mode=TwoWay}" ItemsSource="{Binding AvailableLanguages}" Background="Black" SelectionChanged="LanguageComboBox_SelectionChanged" />
 
             </Grid>
         </ScrollViewer>

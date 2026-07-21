@@ -1174,5 +1174,23 @@ namespace AutoActions.ProjectResources {
                 return ResourceManager.GetString("Yes", resourceCulture);
             }
         }
+
+        public static string Language {
+            get {
+                return ResourceManager.GetString("Language", resourceCulture);
+            }
+        }
+
+        public static string LanguageAuto {
+            get {
+                return ResourceManager.GetString("LanguageAuto", resourceCulture);
+            }
+        }
+
+        public static string RestartRequired {
+            get {
+                return ResourceManager.GetString("RestartRequired", resourceCulture);
+            }
+        }
     }
 }

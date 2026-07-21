@@ -1157,4 +1157,13 @@ Public License instead of this License.  But first, please read
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="LanguageAuto" xml:space="preserve">
+    <value>Automatic (system)</value>
+  </data>
+  <data name="RestartRequired" xml:space="preserve">
+    <value>Please restart AutoActions to apply the new language.</value>
+  </data>
 </root>

@@ -1,5 +1,7 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using AutoActions.ProjectResources;
 
 namespace AutoActions.Views
 {
@@ -18,6 +20,13 @@ namespace AutoActions.Views
 
         }
 
-
+        private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Only react to genuine user changes, not the initial binding load.
+            if (!IsLoaded || e.AddedItems.Count == 0)
+                return;
+            MessageBox.Show(ProjectLocales.RestartRequired, "AutoActions",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 }

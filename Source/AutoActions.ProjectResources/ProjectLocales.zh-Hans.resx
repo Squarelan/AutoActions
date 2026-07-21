@@ -1041,4 +1041,10 @@ Public License instead of this License.  But first, please read
   </data>
   <data name="Yes" xml:space="preserve"><value>是</value>
   </data>
+  <data name="Language" xml:space="preserve"><value>语言</value>
+  </data>
+  <data name="LanguageAuto" xml:space="preserve"><value>自动(跟随系统)</value>
+  </data>
+  <data name="RestartRequired" xml:space="preserve"><value>请重启 AutoActions 以应用新语言。</value>
+  </data>
 </root>

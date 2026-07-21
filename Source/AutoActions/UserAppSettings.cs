@@ -27,6 +27,7 @@ namespace AutoActions
         private bool _checkForNewVersion = true;
         private bool _hideSplashScreenOnStartup = false;
         private bool _hideSplashScreenOnAutoUpdate = false;
+        private string _language = string.Empty;
 
         readonly object _audioDevicesLock = new object();
         private Guid _defaultProfileGuid = Guid.Empty;
@@ -72,6 +73,20 @@ namespace AutoActions
 
         [JsonProperty]
         public bool CheckForNewVersion { get => _checkForNewVersion; set { _checkForNewVersion = value; OnPropertyChanged(); } }
+
+        /// <summary>
+        /// UI language culture name. Empty string = follow Windows system locale (automatic).
+        /// Examples: "" (auto), "en", "de", "zh-Hans", "zh-Hant".
+        /// </summary>
+        [JsonProperty]
+        public string Language { get => _language; set { _language = value ?? string.Empty; OnPropertyChanged(); } }
+
+        /// <summary>
+        /// Language options shown in the settings UI. Autonyms are used so each entry
+        /// is readable regardless of the currently active UI language.
+        /// </summary>
+        [JsonIgnore]
+        public System.Collections.Generic.IEnumerable<LanguageOption> AvailableLanguages => LanguageOption.All;
 
 
         [JsonProperty(Order = 2)]
@@ -186,12 +201,56 @@ namespace AutoActions
 
     public static class UserAppSettingsExtension
     {
-
         public static void SaveSettings(this UserAppSettings settings, string path)
         {
             UserAppSettings.SaveSettings(settings, path);
         }
+    }
 
+    /// <summary>
+    /// One entry in the language selector. DisplayName uses the language's own script (autonym).
+    /// CultureName is the value stored in UserAppSettings.Language.
+    /// </summary>
+    public class LanguageOption
+    {
+        public string DisplayName { get; }
+        public string CultureName { get; }
+
+        public LanguageOption(string displayName, string cultureName)
+        {
+            DisplayName = displayName;
+            CultureName = cultureName;
+        }
+
+        public static readonly System.Collections.Generic.IReadOnlyList<LanguageOption> All =
+            new System.Collections.Generic.List<LanguageOption>
+            {
+                new LanguageOption("Automatic (system) / 自动 / 自動", string.Empty),
+                new LanguageOption("English", "en"),
+                new LanguageOption("Deutsch", "de"),
+                new LanguageOption("简体中文", "zh-Hans"),
+                new LanguageOption("繁體中文", "zh-Hant"),
+            };
+
+        /// <summary>
+        /// Applies the culture stored in <paramref name="cultureName"/> to the current thread.
+        /// Empty string = leave the runtime-detected system locale in place.
+        /// </summary>
+        public static void ApplyLanguage(string cultureName)
+        {
+            if (string.IsNullOrEmpty(cultureName))
+                return;
+            try
+            {
+                var ci = System.Globalization.CultureInfo.GetCultureInfo(cultureName);
+                System.Globalization.CultureInfo.DefaultThreadCurrentCulture = ci;
+                System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = ci;
+                System.Threading.Thread.CurrentThread.CurrentCulture =
+                    System.Globalization.CultureInfo.CreateSpecificCulture(ci.Name);
+                System.Threading.Thread.CurrentThread.CurrentUICulture = ci;
+            }
+            catch { /* unknown culture name — silently fall back to system default */ }
+        }
     }
 
 }

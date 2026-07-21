@@ -32,6 +32,9 @@ namespace AutoActions
                 var application = new App();
                 application.InitializeComponent();
                 Globals.Instance.LoadSettings();
+                // Apply the saved UI language before any window is created.
+                // Empty setting = follow the Windows system locale (automatic detection).
+                LanguageOption.ApplyLanguage(Globals.Instance.Settings.Language);
                 application.Run();
             }
             else

@@ -243,6 +243,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Locale.de.resx" />
+    <EmbeddedResource Include="Locale.zh-Hans.resx" />
     <EmbeddedResource Include="Locale.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Locale.Designer.cs</LastGenOutput>

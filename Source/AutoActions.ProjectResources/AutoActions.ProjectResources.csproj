@@ -81,6 +81,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ProjectLocales.de.resx" />
+    <EmbeddedResource Include="ProjectLocales.zh-Hans.resx" />
     <EmbeddedResource Include="ProjectLocales.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ProjectLocales.Designer.cs</LastGenOutput>

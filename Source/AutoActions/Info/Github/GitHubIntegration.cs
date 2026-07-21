@@ -75,9 +75,16 @@ namespace AutoActions.Info.Github
         private static Version ParseVersionTag(string tag)
         {
             if (string.IsNullOrWhiteSpace(tag))
-                return new Version(0, 0, 0, 0);
+                return new Version(0, 0, 0);
             var match = System.Text.RegularExpressions.Regex.Match(tag, @"\d+(\.\d+){1,3}");
-            return match.Success ? new Version(match.Value) : new Version(0, 0, 0, 0);
+            if (!match.Success)
+                return new Version(0, 0, 0);
+            var parsed = new Version(match.Value);
+            // Normalize to Major.Minor.Build (3 components) to match
+            // VersionExtension.ApplicationVersion(), which drops the revision.
+            // Otherwise a 4-segment tag like "1.9.28.0" compares as newer than the
+            // running 3-segment "1.9.28" and the app updates to itself forever.
+            return new Version(parsed.Major, System.Math.Max(parsed.Minor, 0), System.Math.Max(parsed.Build, 0));
         }
     }
 }

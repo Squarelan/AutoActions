@@ -27,15 +27,10 @@ namespace AutoActions.Info.Github
             InitializeClient();
             Globals.Logs.Add($"Requesting releases...", false);
             Release release;
-            try
-            {
-                release = _client.Repository.Release.GetLatest(323106537).Result;
-            }
-            catch (Exception ex)
-            {
-                release = _client.Repository.Release.GetLatest("Codectory", "AutoHDR").Result;
-            }
-            Version latestGitHubVersion = new Version(release.TagName);
+            // Point updates at this Chinese fork so auto-update keeps the localized build
+            // instead of overwriting it with the upstream English/German release.
+            release = _client.Repository.Release.GetLatest("Squarelan", "AutoActions").Result;
+            Version latestGitHubVersion = ParseVersionTag(release.TagName);
             DateTime latestReleaseDate = release.PublishedAt.HasValue ? release.PublishedAt.Value.DateTime : DateTime.MinValue;
             Globals.Logs.Add($"Releases found. Latest version: {latestGitHubVersion}", false);
 
@@ -69,7 +64,20 @@ namespace AutoActions.Info.Github
             Globals.Logs.Add($"Creating GitHubData...", false);
             var assetx64 = release.Assets.FirstOrDefault(a => a.Name.ToUpperInvariant().Contains("_X64"));
             var assetx86 = release.Assets.FirstOrDefault(a => a.Name.ToUpperInvariant().Contains("_X86"));
-            return new GitHubData(changelog, latestGitHubVersion, latestReleaseDate, $@"https://github.com/Codectory/AutoActions/releases/tag/{latestGitHubVersion}", assetx64 != null ? assetx64.BrowserDownloadUrl : "", assetx86 != null ? assetx86.BrowserDownloadUrl : "");
+            return new GitHubData(changelog, latestGitHubVersion, latestReleaseDate, $@"https://github.com/Squarelan/AutoActions/releases/tag/{release.TagName}", assetx64 != null ? assetx64.BrowserDownloadUrl : "", assetx86 != null ? assetx86.BrowserDownloadUrl : "");
+        }
+
+        /// <summary>
+        /// Parses a release tag into a Version, tolerating a leading "v" and any
+        /// non-numeric suffix (e.g. "v1.9.28", "1.9.28-zh"). Falls back to 0.0.0.0
+        /// so a malformed tag can never crash the update check.
+        /// </summary>
+        private static Version ParseVersionTag(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+                return new Version(0, 0, 0, 0);
+            var match = System.Text.RegularExpressions.Regex.Match(tag, @"\d+(\.\d+){1,3}");
+            return match.Success ? new Version(match.Value) : new Version(0, 0, 0, 0);
         }
     }
 }

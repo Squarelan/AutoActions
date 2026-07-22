@@ -24,9 +24,9 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{Binding Date, StringFormat='{}{0:dd.MM.yyyy HH:mm:ss}'}" Margin="5,0,0,0"/>
-                <TextBlock Grid.Column="1" Text="{Binding EntryType}" Margin="5,0,0,0"/>
-                <TextBlock Grid.Column="2" Text="{Binding Content}" Margin="5,0,0,0"/>
+                <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Column="0" Text="{Binding Date, StringFormat='{}{0:dd.MM.yyyy HH:mm:ss}'}" Margin="5,0,0,0"/>
+                <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Column="1" Text="{Binding EntryType}" Margin="5,0,0,0"/>
+                <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Column="2" Text="{Binding Content}" Margin="5,0,0,0"/>
             </Grid>
         </DataTemplate>
     </UserControl.Resources>

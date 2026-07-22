@@ -8,6 +8,7 @@
              xmlns:audio="clr-namespace:AutoActions.Audio;assembly=AutoActions.AudioManager"
              xmlns:pres="clr-namespace:AutoActions.ProjectResources;assembly=AutoActions.ProjectResources"
              xmlns:prflActns="clr-namespace:AutoActions.Profiles.Actions"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=prflActns:AudioDeviceAction, IsDesignTimeCreatable=False}">
     <UserControl.Resources>
@@ -44,11 +45,11 @@
         <TextBlock Style="{StaticResource DefaultTextBlock}"   Grid.Row="0" Grid.Column="0" Margin="5" Text="{x:Static pres:ProjectLocales.ChangePlaybackDevice}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
         <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Row="1" Grid.Column="0" Margin="5" Text="{x:Static pres:ProjectLocales.ChangeRecordDevice}" HorizontalAlignment="Left" VerticalAlignment="Center" />
 
-        <CheckBox x:Name="OutputCheckBox"  Grid.Row="0"  Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding ChangePlaybackDevice, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Left"  Margin="5" />
+        <ui:ToggleSwitch x:Name="OutputCheckBox"  Grid.Row="0"  Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding ChangePlaybackDevice, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Left"  Margin="5" />
 
         <ComboBox Grid.Row="0" Grid.Column="2" Margin="5" IsEnabled="{Binding ElementName=OutputCheckBox, Path=IsChecked}" ItemTemplate="{StaticResource AudioDeviceTemplate}" ItemsSource="{Binding Source={x:Static audio:AudioController.Instance}, Path=OutputAudioDevices}" SelectedItem="{Binding PlaybackDevice}"  Visibility="{Binding ChangePlaybackDevice, Converter={StaticResource VisibilityBooleanConverter}}" />
 
-        <CheckBox x:Name="InputCheckBox"  Grid.Row="1"  Grid.Column="1"  Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding ChangeRecordDevice, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Left"  />
+        <ui:ToggleSwitch x:Name="InputCheckBox"  Grid.Row="1"  Grid.Column="1"  Margin="5" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding ChangeRecordDevice, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Left"  />
 
         <ComboBox Grid.Row="1" Grid.Column="2" Margin="5"  IsEnabled="{Binding ElementName=InputCheckBox, Path=IsChecked}" ItemTemplate="{StaticResource AudioDeviceTemplate}" ItemsSource="{Binding Source={x:Static audio:AudioController.Instance}, Path=InputAudioDevices}" SelectedItem="{Binding RecordDevice}" Visibility="{Binding ChangeRecordDevice, Converter={StaticResource VisibilityBooleanConverter}}"  />
     </Grid>

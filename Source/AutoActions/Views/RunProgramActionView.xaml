@@ -7,6 +7,7 @@
              xmlns:root="clr-namespace:AutoActions"
              xmlns:pres="clr-namespace:AutoActions.ProjectResources;assembly=AutoActions.ProjectResources"
              xmlns:prflActns="clr-namespace:AutoActions.Profiles.Actions"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=prflActns:RunProgramAction, IsDesignTimeCreatable=False}">
 
@@ -34,6 +35,6 @@
         <TextBox Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="1" Margin="5"  Text="{Binding Arguments}" />
 
 
-        <CheckBox Grid.Row="2"  Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding WaitForEnd, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0"  />
+        <ui:ToggleSwitch Grid.Row="2"  Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding WaitForEnd, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0"  />
     </Grid>
 </UserControl>

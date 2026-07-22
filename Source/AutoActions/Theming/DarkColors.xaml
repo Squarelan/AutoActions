@@ -44,6 +44,10 @@
     <SolidColorBrush x:Key="SubtleForegroundBrush" Color="{StaticResource SubtleForegroundColor}"/>
     <SolidColorBrush x:Key="DisabledAccentBrush" Color="{StaticResource DisabledControlDarkColor}"/>
 
+    <!-- WinUI-style navigation selection (subtle white fill on dark surfaces) -->
+    <SolidColorBrush x:Key="NavItemHoverBrush" Color="#14FFFFFF"/>
+    <SolidColorBrush x:Key="NavItemSelectedBrush" Color="#24FFFFFF"/>
+
     <!-- Scrollbar (lighter grays read better on a dark track) -->
     <SolidColorBrush x:Key="ScrollBrush">#4A4A4A</SolidColorBrush>
     <SolidColorBrush x:Key="MouseOverScrollBrush">#5E5E5E</SolidColorBrush>

@@ -164,7 +164,9 @@ namespace AutoActions
                     ImageSource imageSource = (ImageSource)converter.Convert(assignment.Application.Icon, typeof(ImageSource), null, System.Globalization.CultureInfo.CurrentUICulture);
                     item.Icon = new System.Windows.Controls.Image
                     {
-                        Source = imageSource
+                        Source = imageSource,
+                        Width = 16,
+                        Height = 16
                     };
                     item.Header = assignment.Application.DisplayName;
                     item.Click += (o, e) => assignment.Application.StartApplication();

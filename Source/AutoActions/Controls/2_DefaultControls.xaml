@@ -29,15 +29,23 @@
                     <Grid>
                         <Border Name="_Border"
                                 Padding="2"
+                                CornerRadius="4"
+                                Background="Transparent"
                                 SnapsToDevicePixels="true" Margin="5">
                         </Border>
                         <ContentPresenter />
 
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsSelected" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="_Border" Property="Background" Value="{DynamicResource NavItemHoverBrush}"/>
+                        </MultiTrigger>
                         <Trigger Property="IsSelected" Value="true">
-                            <Setter TargetName="_Border" Property="Background" Value="{StaticResource HighlightedBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
+                            <Setter TargetName="_Border" Property="Background" Value="{DynamicResource NavItemSelectedBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -147,74 +155,35 @@
     <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBox}"/>
 	
     <Style x:Key="DefaultButton" TargetType="Button" >
-        <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource ButtonForegroundBrush}"/>
-        <Setter Property="Height" Value="25"/>
+        <Setter Property="Background" Value="{DynamicResource ControlLightBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}"/>
+        <Setter Property="Height" Value="Auto"/>
         <Setter Property="FontSize" Value="14"/>
 
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border  Height="Auto" Width="Auto" BorderBrush="{TemplateBinding Background}" Background="{TemplateBinding Background}" BorderThickness="0" CornerRadius="{StaticResource DefaultCornerRadius}">
+                    <Border x:Name="Bd" Height="Auto" Width="Auto" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="1" CornerRadius="4">
                         <TextBlock Style="{StaticResource DefaultTextBlock}" FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}" Background="Transparent" Margin="8,5" Foreground="{TemplateBinding Foreground}" Text="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource IconBackgroundBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlLightBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource SubtleForegroundBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
         <Setter Property="Padding" Value="5,5"/>
-        <Style.Triggers>
-            <Trigger Property="IsEnabled" Value="false">
-                <Setter Property="Background" Value="{DynamicResource DisabledAccentBrush}"/>
-                <Setter Property="Foreground" Value="{StaticResource ButtonForegroundBrush}"/>
-            </Trigger>
-            <Trigger Property="IsMouseOver" Value="true">
-                <Trigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation To="{StaticResource ControlMouseOverColor}"
-                                        Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)" 
-                                        FillBehavior="HoldEnd" Duration="0:0:0.10" AutoReverse="False" RepeatBehavior="1x"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.EnterActions>
-
-                <Trigger.ExitActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation
-                                            Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)" 
-                                            FillBehavior="HoldEnd" Duration="0:0:0.10" AutoReverse="False" RepeatBehavior="1x"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.ExitActions>
-
-            </Trigger>
-
-            <Trigger Property="IsPressed" Value="true">
-                <Trigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation To="{StaticResource ControlPressedColor}"
-                                        Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)" 
-                                        FillBehavior="HoldEnd" Duration="0:0:0.10" AutoReverse="False" RepeatBehavior="1x"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.EnterActions>
-
-                <Trigger.ExitActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation
-                                            Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)" 
-                                            FillBehavior="HoldEnd" Duration="0:0:0.10" AutoReverse="False" RepeatBehavior="1x"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.ExitActions>
-
-            </Trigger>
-
-
-        </Style.Triggers>
+        <!-- hover / pressed / disabled are handled by the template triggers above (WinUI neutral) -->
     </Style>
     <Style TargetType="Button" BasedOn="{StaticResource DefaultButton}"/>
     <Style x:Key="DefaultCheckBox"  TargetType="{x:Type CheckBox}">

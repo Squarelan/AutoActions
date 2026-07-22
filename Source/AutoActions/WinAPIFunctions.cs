@@ -33,5 +33,32 @@ namespace AutoActions
         {
             return GetForegroundWindow();
         }
+
+        // --- Dark title bar (DWM immersive dark mode) ---
+        [DllImport("dwmapi.dll", PreserveSig = true)]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+        private const int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
+        private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+
+        /// <summary>
+        /// Enables/disables the dark (immersive) window title bar via DWM. Tries the current
+        /// attribute id (20, Win10 20H1+) and falls back to the older id (19). Returns true on
+        /// success; safe to call on unsupported OSes (returns false, no exception surfaces).
+        /// </summary>
+        public static bool UseImmersiveDarkMode(IntPtr handle, bool enabled)
+        {
+            try
+            {
+                int useDark = enabled ? 1 : 0;
+                if (DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref useDark, sizeof(int)) == 0)
+                    return true;
+                return DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ref useDark, sizeof(int)) == 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

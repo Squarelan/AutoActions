@@ -7,6 +7,7 @@
              xmlns:root="clr-namespace:AutoActions"
              xmlns:pres="clr-namespace:AutoActions.ProjectResources;assembly=AutoActions.ProjectResources"
              xmlns:prflActns="clr-namespace:AutoActions.Profiles.Actions"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=prflActns:CloseProgramAction, IsDesignTimeCreatable=False}">
 
@@ -26,6 +27,6 @@
         <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Row="1" Grid.Column="0" Margin="5" Text="{x:Static pres:ProjectLocales.ForceKill}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
         <TextBox Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="1" Margin="5"  Text="{Binding ProcessName , UpdateSourceTrigger=PropertyChanged}" />
-        <CheckBox Grid.Row="1"  Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding Force, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0"  />
+        <ui:ToggleSwitch Grid.Row="1"  Grid.Column="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding Force, Mode=TwoWay}" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0"  />
     </Grid>
 </UserControl>

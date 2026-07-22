@@ -59,19 +59,23 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Margin="4,2" MinHeight="40">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="4" Margin="4,2" MinHeight="40">
                             <Grid>
-                                <Border x:Name="Indicator" Width="3" Height="18" CornerRadius="2" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                <Border x:Name="Indicator" Width="3" Height="16" CornerRadius="1.5" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                                 <ContentPresenter ContentSource="Header" Margin="16,0,10,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                    <Condition Property="IsSelected" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource NavItemHoverBrush}"/>
+                            </MultiTrigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource IconBackgroundBrush}"/>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource NavItemSelectedBrush}"/>
                                 <Setter TargetName="Indicator" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource IconBackgroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

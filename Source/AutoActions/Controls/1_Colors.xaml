@@ -54,6 +54,10 @@
     <SolidColorBrush x:Key="InactiveAccentBrush">#AD7B7B</SolidColorBrush>
     <SolidColorBrush x:Key="HighlightedInactiveAccentBrush" Color="#95BFDB"/>
 
+    <!-- WinUI-style navigation selection (subtle neutral fill; overridden in dark) -->
+    <SolidColorBrush x:Key="NavItemHoverBrush" Color="#0A000000"/>
+    <SolidColorBrush x:Key="NavItemSelectedBrush" Color="#14000000"/>
+
     <!-- Disabled brush (overridden in dark) -->
     <SolidColorBrush x:Key="DisabledAccentBrush" Color="{StaticResource DisabledControlDarkColor}"/>
 

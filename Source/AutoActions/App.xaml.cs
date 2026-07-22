@@ -103,9 +103,33 @@ namespace AutoActions
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            // Apply the dark title bar to EVERY window (main window + all DialogService
+            // dialogs), not just the main one. A class-level Loaded handler runs for each
+            // Window once its HWND exists. Only needed in dark mode (light keeps the default
+            // light caption bar). The theme is fixed for the session (set at startup).
+            if (Theme == Theme.Dark)
+            {
+                EventManager.RegisterClassHandler(typeof(System.Windows.Window),
+                    System.Windows.Window.LoadedEvent,
+                    new RoutedEventHandler(OnAnyWindowLoaded));
+            }
             Views.AutoActionsMainView mainView = new Views.AutoActionsMainView();
             if (!Globals.Instance.Settings.StartMinimizedToTray)
                 mainView.Show();
+        }
+
+        // Sets the immersive dark title bar on any window as it loads (dark theme only).
+        private static void OnAnyWindowLoaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is System.Windows.Window window)
+                {
+                    IntPtr hwnd = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+                    WinAPIFunctions.UseImmersiveDarkMode(hwnd, true);
+                }
+            }
+            catch { }
         }
 
         protected override void OnExit(ExitEventArgs e)

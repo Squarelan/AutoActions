@@ -37,8 +37,8 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <Button Grid.Column="2" Grid.Row="0" Grid.RowSpan="1" Content="..."   VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,0,5,0" Width="25"  FontSize="20" Command="{Binding  ElementName=ProfileList, Path=SelectedItem.EditProfileActionCommand}" CommandParameter="{Binding}" />
-                    <Button Grid.Column="3" Grid.Row="0" Grid.RowSpan="1"   Content="-"  VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,0,5,0" Width="25" FontSize="20" Command="{Binding  ElementName=ProfileList, Path=SelectedItem.RemoveProfileActionCommand}" CommandParameter="{Binding}" />
+                    <ui:Button Grid.Column="2" Grid.Row="0" Grid.RowSpan="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,0,5,0" Padding="6,3" Command="{Binding  ElementName=ProfileList, Path=SelectedItem.EditProfileActionCommand}" CommandParameter="{Binding}"><ui:SymbolIcon Symbol="Edit24" FontSize="16"/></ui:Button>
+                    <ui:Button Grid.Column="3" Grid.Row="0" Grid.RowSpan="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,0,5,0" Padding="6,3" Command="{Binding  ElementName=ProfileList, Path=SelectedItem.RemoveProfileActionCommand}" CommandParameter="{Binding}"><ui:SymbolIcon Symbol="Subtract24" FontSize="16"/></ui:Button>
                     <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Column="0" Grid.Row="0" Text="{x:Static pres:ProjectLocales.ActionType}"  Margin="5,1" VerticalAlignment="Top" HorizontalAlignment="Left" FontWeight="DemiBold" />
                     <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Column="0" Grid.ColumnSpan="3"  Grid.Row="1" Text="{Binding ActionTypeName}"  Margin="5,1" VerticalAlignment="Top" HorizontalAlignment="Left" />
                     <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Column="0" Grid.Row="3" Text="{x:Static pres:ProjectLocales.Actions}"  Margin="5,1" VerticalAlignment="Top" HorizontalAlignment="Left" FontWeight="DemiBold" />
@@ -111,7 +111,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Button Style="{StaticResource AddActionButton}" Grid.Column="0"  Command="{Binding AddStartedActionCommand }" />
+                    <ui:Button Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Left" Margin="5" Padding="10,6" Command="{Binding AddStartedActionCommand }"><ui:SymbolIcon Symbol="Add24"/></ui:Button>
                     <ScrollViewer Grid.Column="1" x:Name="ScrollViewerStart" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="Auto">
                         <ItemsControl  MinHeight="50"  ItemsPanel="{StaticResource StackPanelTemplate}" ItemsSource="{Binding ApplicationStarted}"  ItemTemplate="{StaticResource ProfileActionItemTemplate}"/>
                     </ScrollViewer>
@@ -123,7 +123,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Style="{StaticResource AddActionButton}"  Command="{Binding AddClosedActionCommand}"/>
+                    <ui:Button Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Left" Margin="5" Padding="10,6" Command="{Binding AddClosedActionCommand}"><ui:SymbolIcon Symbol="Add24"/></ui:Button>
                         <ScrollViewer Grid.Column="1"  x:Name="ScrollViewerStopped" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                         <ItemsControl Grid.Column="1" MinHeight="50"  ItemsPanel="{StaticResource StackPanelTemplate}" ItemsSource="{Binding ApplicationClosed}"  ItemTemplate="{StaticResource ProfileActionItemTemplate}"/>
                         </ScrollViewer>
@@ -135,7 +135,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0"  Style="{StaticResource AddActionButton}" Command="{Binding AddGotFocusActionCommand}"/>
+                    <ui:Button Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Left" Margin="5" Padding="10,6" Command="{Binding AddGotFocusActionCommand}"><ui:SymbolIcon Symbol="Add24"/></ui:Button>
                         <ScrollViewer Grid.Column="1"  x:Name="ScrollViewerFocused" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
 
                         <ItemsControl Grid.Column="1" MinHeight="50"   ItemsPanel="{StaticResource StackPanelTemplate}" ItemsSource="{Binding ApplicationGotFocus}"  ItemTemplate="{StaticResource ProfileActionItemTemplate}"/>
@@ -148,7 +148,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0"  Style="{StaticResource AddActionButton}" Command="{Binding AddLostFocusActionCommand}" />
+                    <ui:Button Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Left" Margin="5" Padding="10,6" Command="{Binding AddLostFocusActionCommand}"><ui:SymbolIcon Symbol="Add24"/></ui:Button>
                     <ScrollViewer Grid.Column="1"  x:Name="ScrollViewerLost" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
 
                         <ItemsControl Grid.Column="1" MinHeight="50"  ItemsPanel="{StaticResource StackPanelTemplate}" ItemsSource="{Binding ApplicationLostFocus}"  ItemTemplate="{StaticResource ProfileActionItemTemplate}"/>
@@ -169,8 +169,8 @@
                 <ColumnDefinition/>
 
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="1"  Width="30" FontSize="20" Command="{Binding AddProfileCommand}" Content="+" Margin="10,5,5,10" Height="Auto"  />
-            <Button Grid.Column="2" Width="30" FontSize="20" Command="{Binding RemoveProfileCommand}" CommandParameter="{Binding ElementName=ProfileList, Path=SelectedItem}"  Height="Auto" Content="-" IsEnabled="{Binding ElementName=ProfileList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}"   Margin="5,5,5,10" />
+            <ui:Button Grid.Column="1" Command="{Binding AddProfileCommand}" Padding="10,6" Margin="10,5,5,10" Height="Auto"><ui:SymbolIcon Symbol="Add24"/></ui:Button>
+            <ui:Button Grid.Column="2" Command="{Binding RemoveProfileCommand}" CommandParameter="{Binding ElementName=ProfileList, Path=SelectedItem}" Height="Auto" IsEnabled="{Binding ElementName=ProfileList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}" Padding="10,6" Margin="5,5,5,10"><ui:SymbolIcon Symbol="Subtract24"/></ui:Button>
         </Grid>
 
     </Grid>

@@ -3,57 +3,74 @@
   <!---->
   <!---->
   <!--Merged from file 1_Colors.xaml-->
-  <Color x:Key="ActiveColor">#2ac987</Color>
-  <Color x:Key="AccentColor">#ff6666</Color>
-  <Color x:Key="ControlMouseOverColor">#fa8e8e</Color>
-  <Color x:Key="ControlPressedColor">#e36b6b</Color>
-  <Color x:Key="WindowColor">White</Color>
-  <Color x:Key="SelectedBackgroundColor">#fca9a9</Color>
-  <Color x:Key="SelectedUnfocusedColor">#FFDDDDDD</Color>
-  <Color x:Key="ControlLightColor">White</Color>
-  <Color x:Key="ControlMediumColor">#FFCCCCCC</Color>
-  <Color x:Key="IconBackgroundColor">#d4d4d4</Color>
-  <Color x:Key="GlyphColor">#FF444444</Color>
-  <Color x:Key="DisabledForegroundColor">#cfcfcf</Color>
-  <Color x:Key="DisabledControlDarkColor">#8A8A8A</Color>
-  <Color x:Key="DisabledBorderColor">#adadad</Color>
+  <!-- ============================================================= -->
+  <!--  LIGHT THEME PALETTE (default, baked into AppResources.xaml)   -->
+  <!--  Red accent identity preserved; neutrals modernized (Fluent).  -->
+  <!--  The matching dark overrides live in Theming/DarkColors.xaml   -->
+  <!--  and are merged on top at startup when Windows is in dark mode.-->
+  <!-- ============================================================= -->
+  <!-- Accent / status family (kept identical in light & dark) -->
+  <Color x:Key="ActiveColor">#21C67D</Color>
+  <Color x:Key="AccentColor">#FF6666</Color>
+  <Color x:Key="ControlMouseOverColor">#FF8585</Color>
+  <Color x:Key="ControlPressedColor">#E85B5B</Color>
+  <Color x:Key="SelectedBackgroundColor">#FF7A7A</Color>
+  <!-- Neutral surfaces (overridden in dark) -->
+  <Color x:Key="WindowColor">#FBFBFB</Color>
+  <Color x:Key="ControlLightColor">#FFFFFF</Color>
+  <Color x:Key="ControlMediumColor">#E2E2E2</Color>
+  <Color x:Key="IconBackgroundColor">#ECECEC</Color>
+  <Color x:Key="SelectedUnfocusedColor">#E6E6E6</Color>
+  <!-- Text / glyph (overridden in dark) -->
+  <Color x:Key="ForegroundColor">#1F1F1F</Color>
+  <Color x:Key="SubtleForegroundColor">#6B6B6B</Color>
+  <Color x:Key="GlyphColor">#5A5A5A</Color>
+  <!-- Text drawn on top of the red accent - stays light in both themes -->
+  <Color x:Key="ButtonForegroundColor">#FFFFFF</Color>
+  <!-- Disabled states (overridden in dark) -->
+  <Color x:Key="DisabledForegroundColor">#B4B4B4</Color>
+  <Color x:Key="DisabledControlDarkColor">#9A9A9A</Color>
+  <Color x:Key="DisabledBorderColor">#D4D4D4</Color>
+  <!-- ===================== Brushes ===================== -->
+  <!-- Neutral brushes (kept in sync with the dark overrides) -->
   <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowColor}" />
-  <SolidColorBrush x:Key="ButtonForegroundBrush" Color="{StaticResource WindowColor}" />
+  <SolidColorBrush x:Key="ControlLightBrush" Color="{StaticResource ControlLightColor}" />
+  <SolidColorBrush x:Key="IconBackgroundBrush" Color="{StaticResource IconBackgroundColor}" />
+  <SolidColorBrush x:Key="ControlBorderBrush" Color="{StaticResource ControlMediumColor}" />
+  <SolidColorBrush x:Key="GlyphBrush" Color="{StaticResource GlyphColor}" />
+  <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource ForegroundColor}" />
+  <SolidColorBrush x:Key="SubtleForegroundBrush" Color="{StaticResource SubtleForegroundColor}" />
+  <!-- Accent / status brushes (identical in dark) -->
+  <SolidColorBrush x:Key="ButtonForegroundBrush" Color="{StaticResource ButtonForegroundColor}" />
   <SolidColorBrush x:Key="ActiveBrush" Color="{StaticResource ActiveColor}" />
   <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
   <SolidColorBrush x:Key="HighlightedBrush" Color="{StaticResource SelectedBackgroundColor}" />
   <SolidColorBrush x:Key="MouseOverBrush" Color="{StaticResource ControlMouseOverColor}" />
-  <SolidColorBrush x:Key="ControlLightBrush" Color="{StaticResource ControlLightColor}" />
-  <SolidColorBrush x:Key="GlyphBrush" Color="{StaticResource GlyphColor}" />
-  <SolidColorBrush x:Key="IconBackgroundBrush" Color="{StaticResource IconBackgroundColor}" />
-  <SolidColorBrush x:Key="InactiveAccentBrush">#ad7b7b</SolidColorBrush>
-  <SolidColorBrush x:Key="DragScrollBrush">#757575</SolidColorBrush>
-  <SolidColorBrush x:Key="ScrollBrush">#969696</SolidColorBrush>
-  <SolidColorBrush x:Key="MouseOverScrollBrush">#a1a1a1</SolidColorBrush>
+  <SolidColorBrush x:Key="InactiveAccentBrush">#AD7B7B</SolidColorBrush>
+  <SolidColorBrush x:Key="HighlightedInactiveAccentBrush" Color="#95BFDB" />
+  <!-- Disabled brush (overridden in dark) -->
   <SolidColorBrush x:Key="DisabledAccentBrush" Color="{StaticResource DisabledControlDarkColor}" />
-  <SolidColorBrush x:Key="HighlightedInactiveAccentBrush" Color="#95bfdb" />
+  <!-- Scrollbar brushes (overridden in dark) -->
+  <SolidColorBrush x:Key="ScrollBrush">#C9C9C9</SolidColorBrush>
+  <SolidColorBrush x:Key="MouseOverScrollBrush">#ABABAB</SolidColorBrush>
+  <SolidColorBrush x:Key="DragScrollBrush">#8A8A8A</SolidColorBrush>
   <StaticResource x:Key="ButtonBackgroundBrush" ResourceKey="AccentBrush" />
   <!---->
   <!--Merged from file 2_DefaultControls.xaml-->
-  <system:Double x:Key="DefaultFontSize">15</system:Double>
+  <system:Double x:Key="DefaultFontSize">14</system:Double>
   <system:Double x:Key="DefaultRadius">7.5</system:Double>
-  <CornerRadius x:Key="DefaultCornerRadius">7.5</CornerRadius>
+  <CornerRadius x:Key="DefaultCornerRadius">6</CornerRadius>
   <Style x:Key="DefaultBorder" TargetType="Border">
     <Setter Property="CornerRadius" Value="{StaticResource DefaultCornerRadius}" />
-    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Height" Value="Auto" />
     <Setter Property="Width" Value="Auto" />
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="Effect">
-      <Setter.Value>
-        <DropShadowEffect BlurRadius="2.5" ShadowDepth="1" Opacity="0.4" Direction="260" />
-      </Setter.Value>
-    </Setter>
     <Style.Triggers>
       <Trigger Property="IsEnabled" Value="false">
-        <Setter Property="Background" Value="{StaticResource DisabledAccentBrush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource DisabledAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource DisabledAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource DisabledAccentBrush}" />
       </Trigger>
     </Style.Triggers>
   </Style>
@@ -68,7 +85,7 @@
           <ControlTemplate.Triggers>
             <Trigger Property="IsSelected" Value="true">
               <Setter TargetName="_Border" Property="Background" Value="{StaticResource HighlightedBrush}" />
-              <Setter Property="Foreground" Value="Black" />
+              <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -77,17 +94,17 @@
   </Style>
   <Style x:Key="DefaultTextBlock" TargetType="TextBlock">
     <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
-    <Setter Property="Foreground" Value="Black" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="Margin" Value="5" />
   </Style>
   <Style x:Key="TitleTextBlock" TargetType="TextBlock" BasedOn="{StaticResource DefaultTextBlock}">
     <Setter Property="FontSize" Value="25" />
-    <Setter Property="Foreground" Value="Black" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="FontWeight" Value="Bold" />
   </Style>
   <Style x:Key="SubTitleTextBlock" TargetType="TextBlock" BasedOn="{StaticResource DefaultTextBlock}">
-    <Setter Property="FontSize" Value="20" />
-    <Setter Property="Foreground" Value="Black" />
+    <Setter Property="FontSize" Value="18" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="FontWeight" Value="DemiBold" />
   </Style>
   <Style x:Key="ToggleStatus" TargetType="{x:Type CheckBox}">
@@ -100,7 +117,7 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="{x:Type CheckBox}">
-          <Ellipse Fill="{TemplateBinding Background}" HorizontalAlignment="Stretch" Stroke="Black" VerticalAlignment="Stretch" />
+          <Ellipse Fill="{TemplateBinding Background}" HorizontalAlignment="Stretch" Stroke="{DynamicResource GlyphBrush}" VerticalAlignment="Stretch" />
         </ControlTemplate>
       </Setter.Value>
     </Setter>
@@ -114,8 +131,8 @@
     </Style.Triggers>
   </Style>
   <Style x:Key="DefaultUserControl" TargetType="UserControl">
-    <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}" />
-    <Setter Property="Foreground" Value="Black" />
+    <Setter Property="Background" Value="{DynamicResource WindowBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
   </Style>
   <Style TargetType="UserControl" BasedOn="{StaticResource DefaultUserControl}" />
   <Style x:Key="DefaultTextBox" TargetType="TextBox">
@@ -126,11 +143,7 @@
       <Setter.Value>
         <ControlTemplate TargetType="TextBoxBase">
           <Grid>
-            <Border Style="{StaticResource DefaultBorder}" Background="{TemplateBinding Background}">
-              <Border.Effect>
-                <DropShadowEffect BlurRadius="{StaticResource DefaultRadius}" ShadowDepth="1" Opacity="0.25" Direction="260" />
-              </Border.Effect>
-            </Border>
+            <Border Style="{StaticResource DefaultBorder}" Background="{TemplateBinding Background}"></Border>
             <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
           </Grid>
         </ControlTemplate>
@@ -139,7 +152,7 @@
     <Setter Property="Padding" Value="5,5" />
     <Style.Triggers>
       <Trigger Property="IsEnabled" Value="false">
-        <Setter Property="Background" Value="{StaticResource DisabledAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource DisabledAccentBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ButtonForegroundBrush}" />
       </Trigger>
       <Trigger Property="IsMouseOver" Value="true">
@@ -165,7 +178,7 @@
     <Setter Property="Background" Value="{StaticResource AccentBrush}" />
     <Setter Property="Foreground" Value="{StaticResource ButtonForegroundBrush}" />
     <Setter Property="Height" Value="25" />
-    <Setter Property="FontSize" Value="20" />
+    <Setter Property="FontSize" Value="14" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
@@ -178,7 +191,7 @@
     <Setter Property="Padding" Value="5,5" />
     <Style.Triggers>
       <Trigger Property="IsEnabled" Value="false">
-        <Setter Property="Background" Value="{StaticResource DisabledAccentBrush}" />
+        <Setter Property="Background" Value="{DynamicResource DisabledAccentBrush}" />
         <Setter Property="Foreground" Value="{StaticResource ButtonForegroundBrush}" />
       </Trigger>
       <Trigger Property="IsMouseOver" Value="true">
@@ -219,7 +232,7 @@
   <Style x:Key="DefaultCheckBox" TargetType="{x:Type CheckBox}">
     <Style.Triggers>
       <Trigger Property="IsEnabled" Value="False">
-        <Setter Property="BorderBrush" Value="{StaticResource DisabledAccentBrush}"></Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource DisabledAccentBrush}"></Setter>
       </Trigger>
     </Style.Triggers>
     <Setter Property="SnapsToDevicePixels" Value="true" />
@@ -292,22 +305,22 @@
         <ColumnDefinition />
         <ColumnDefinition Width="20" />
       </Grid.ColumnDefinitions>
-      <Border Style="{StaticResource DefaultBorder}" x:Name="Border" Grid.ColumnSpan="2" Background="{StaticResource ControlLightBrush}" />
+      <Border Style="{StaticResource DefaultBorder}" x:Name="Border" Grid.ColumnSpan="2" Background="{DynamicResource ControlLightBrush}" />
       <Border Grid.Column="0" CornerRadius="0" Margin="10,1,0,1" Background="{Binding ElementName=Border, Path=Background}" BorderBrush="{Binding ElementName=Border, Path=BorderBrush}" BorderThickness="0,0,1,0" />
-      <Path x:Name="Arrow" Grid.Column="1" Fill="{StaticResource  GlyphBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z" />
+      <Path x:Name="Arrow" Grid.Column="1" Fill="{DynamicResource GlyphBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z" />
     </Grid>
     <ControlTemplate.Triggers>
       <Trigger Property="ToggleButton.IsMouseOver" Value="true">
-        <Setter TargetName="Border" Property="Background" Value="{StaticResource MouseOverBrush}" />
+        <Setter TargetName="Border" Property="Background" Value="{DynamicResource IconBackgroundBrush}" />
       </Trigger>
       <Trigger Property="ToggleButton.IsChecked" Value="true">
-        <Setter TargetName="Border" Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter TargetName="Border" Property="Background" Value="{DynamicResource IconBackgroundBrush}" />
       </Trigger>
       <Trigger Property="IsEnabled" Value="False">
-        <Setter TargetName="Border" Property="Background" Value="{StaticResource DisabledAccentBrush}" />
-        <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DisabledAccentBrush}" />
-        <Setter Property="Foreground" Value="Black" />
-        <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource  GlyphBrush}" />
+        <Setter TargetName="Border" Property="Background" Value="{DynamicResource DisabledAccentBrush}" />
+        <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource DisabledAccentBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource GlyphBrush}" />
       </Trigger>
     </ControlTemplate.Triggers>
   </ControlTemplate>
@@ -321,8 +334,8 @@
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
     <Setter Property="MinWidth" Value="120" />
-    <Setter Property="MinHeight" Value="20" />
-    <Setter Property="Foreground" Value="Black" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="FontWeight" Value="DemiBold" />
     <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
     <Setter Property="Template">
@@ -330,11 +343,11 @@
         <ControlTemplate TargetType="{x:Type ComboBox}">
           <Grid>
             <ToggleButton Name="ToggleButton" Template="{StaticResource ComboBoxToggleButton}" Grid.Column="2" Focusable="false" IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Press"></ToggleButton>
-            <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="5,3,23,3" VerticalAlignment="Center" HorizontalAlignment="Left" />
-            <TextBox x:Name="PART_EditableTextBox" Style="{StaticResource DefaultTextBox}" Template="{StaticResource ComboBoxTextBox}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,5,23,3" Focusable="True" Background="{StaticResource ControlLightBrush}" Visibility="Hidden" IsReadOnly="{TemplateBinding IsReadOnly}" />
+            <ContentPresenter Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="10,0,26,0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+            <TextBox x:Name="PART_EditableTextBox" Style="{StaticResource DefaultTextBox}" Template="{StaticResource ComboBoxTextBox}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,5,23,3" Focusable="True" Background="{DynamicResource ControlLightBrush}" Visibility="Hidden" IsReadOnly="{TemplateBinding IsReadOnly}" />
             <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
               <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                <Border x:Name="DropDownBorder" Style="{StaticResource DefaultBorder}" Background="{StaticResource ControlLightBrush}" />
+                <Border x:Name="DropDownBorder" Style="{StaticResource DefaultBorder}" Background="{DynamicResource ControlLightBrush}" />
                 <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
                   <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                 </ScrollViewer>
@@ -346,7 +359,7 @@
               <Setter TargetName="DropDownBorder" Property="MinHeight" Value="95" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="false">
-              <Setter Property="Foreground" Value="{StaticResource DisabledAccentBrush}" />
+              <Setter Property="Foreground" Value="{DynamicResource DisabledAccentBrush}" />
             </Trigger>
             <Trigger Property="IsGrouping" Value="true">
               <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
@@ -365,29 +378,5 @@
     </Setter>
     <Style.Triggers></Style.Triggers>
   </Style>
-  <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}">
-    <Setter Property="SnapsToDevicePixels" Value="true" />
-    <Setter Property="Foreground" Value="Black" />
-    <Setter Property="OverridesDefaultStyle" Value="true" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-          <Grid>
-            <Border Name="Border" Style="{StaticResource DefaultBorder}" BorderThickness="0" SnapsToDevicePixels="true"></Border>
-            <ContentPresenter />
-          </Grid>
-          <ControlTemplate.Triggers>
-            <Trigger Property="IsHighlighted" Value="true">
-              <Setter TargetName="Border" Property="Background" Value="{StaticResource MouseOverBrush}" />
-            </Trigger>
-            <Trigger Property="IsEnabled" Value="false">
-              <Setter Property="Foreground" Value="{StaticResource DisabledControlDarkColor}" />
-            </Trigger>
-          </ControlTemplate.Triggers>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style TargetType="ComboBox" BasedOn="{StaticResource StyledComboBox}" />
   <!--This XAML merge infrastructure was provided by http://michaelscodingspot.com/-->
 </ResourceDictionary>

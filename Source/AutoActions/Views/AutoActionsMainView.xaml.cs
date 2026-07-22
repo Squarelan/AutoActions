@@ -41,7 +41,7 @@ namespace AutoActions.Views
                     Height = Globals.Instance.Settings.WindowSize.Height;
                 }
             }
-            catch  { }       
+            catch  { }
         }
 
         private void Instance_SettingsLoaded(object sender, EventArgs e)

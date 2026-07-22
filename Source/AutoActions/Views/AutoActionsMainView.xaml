@@ -11,8 +11,9 @@
         xmlns:dsp="clr-namespace:AutoActions.Displays;assembly=AutoActions.Displays"
         xmlns:local="clr-namespace:AutoActions.Views"
         xmlns:root="clr-namespace:AutoActions"
-        mc:Ignorable="d" 
-        Title="AutoActions" Name="MainWindow" MinHeight="480" MinWidth="480" Closing="Window_Closing"  Visibility="{Binding ShowView, Mode=TwoWay, Converter={StaticResource VisibilityBooleanConverter}}"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="AutoActions" Name="MainWindow" MinHeight="480" MinWidth="480" Background="{DynamicResource WindowBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}" FontFamily="Segoe UI Variable Text, Segoe UI" Closing="Window_Closing"  Visibility="{Binding ShowView, Mode=TwoWay, Converter={StaticResource VisibilityBooleanConverter}}"
          Loaded="MainWindow_Loaded">
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">
@@ -50,6 +51,53 @@
 
         </DataTemplate>
 
+        <!-- ===== Fluent left-navigation look (re-templated TabControl) ===== -->
+        <!-- A single nav entry: accent selection bar + icon/text, hover highlight. -->
+        <Style x:Key="NavTabItem" TargetType="TabItem">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Margin="4,2" MinHeight="40">
+                            <Grid>
+                                <Border x:Name="Indicator" Width="3" Height="18" CornerRadius="2" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                <ContentPresenter ContentSource="Header" Margin="16,0,10,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource IconBackgroundBrush}"/>
+                                <Setter TargetName="Indicator" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource IconBackgroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- The container: left nav pane (surface) + content area. -->
+        <Style x:Key="NavTabControl" TargetType="TabControl">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="180"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Background="{DynamicResource ControlLightBrush}">
+                                <TabPanel IsItemsHost="True" Margin="6,12"/>
+                            </Border>
+                            <ContentPresenter Grid.Column="1" ContentSource="SelectedContent" Margin="0"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
     </Window.Resources>
     <Grid x:Name="MainGrid">
@@ -67,14 +115,32 @@
                 <RowDefinition Height="Auto"/>
 
             </Grid.RowDefinitions>
-            <TabControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" BorderBrush="{StaticResource AccentBrush}"  BorderThickness="0 5 0 0">
-                <TabItem Header="{x:Static pres:ProjectLocales.Status}" HorizontalAlignment="Left" Width="58"  >
+            <TabControl Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" TabStripPlacement="Left" Style="{StaticResource NavTabControl}" ItemContainerStyle="{StaticResource NavTabItem}" BorderThickness="0">
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Home24" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static pres:ProjectLocales.Status}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
                     <local:StatusView DataContext="{Binding}"/>
                 </TabItem>
-                <TabItem Header="{x:Static pres:ProjectLocales.Profiles}"   >
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Options24" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static pres:ProjectLocales.Profiles}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
                     <local:ProfileManagerView   DataContext="{Binding ElementName=MainWindow , Path=DataContext}"/>
                 </TabItem>
-                <TabItem Header="{x:Static pres:ProjectLocales.Applications}" >
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Apps24" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static pres:ProjectLocales.Applications}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
                     <Grid x:Name="AssignmentsGrid" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition  Width="Auto"/>
@@ -89,22 +155,22 @@
                         </Grid.RowDefinitions>
                         <TextBlock Style="{StaticResource SubTitleTextBlock}"  Grid.Column="0" Grid.ColumnSpan="3" Grid.Row ="0"   Text="{x:Static pres:ProjectLocales.Applications}"/>
 
-                        <Border Style="{StaticResource DefaultBorder}" Grid.ColumnSpan="3" Grid.Row ="1"  Margin="5"/>
+                        <ui:Card Grid.ColumnSpan="3" Grid.Row ="1"  Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
                         <Grid Grid.IsSharedSizeScope="True" Grid.ColumnSpan="3" Grid.Row ="1"  Margin="15" >
-                            <ListBox Name="ApplicationList" ItemContainerStyle="{StaticResource ListBoxItemStyle }"  ItemsSource="{Binding Settings.ApplicationProfileAssignments}" HorizontalContentAlignment="Stretch" >
+                            <ListBox Name="ApplicationList" Background="Transparent" ItemContainerStyle="{StaticResource ListBoxItemStyle }"  ItemsSource="{Binding Settings.ApplicationProfileAssignments}" HorizontalContentAlignment="Stretch" >
                                 <ListBox.Template>
                                     <ControlTemplate>
                                         <DockPanel LastChildFill="True">
 
                                             <Grid DockPanel.Dock="Top" Height="Auto" Margin="0,0,0,5" >
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition SharedSizeGroup="IconColumn"/>
-                                                    <ColumnDefinition SharedSizeGroup="ApplicationColumn"/>
+                                                    <ColumnDefinition SharedSizeGroup="IconColumn" MinWidth="60"/>
+                                                    <ColumnDefinition SharedSizeGroup="ApplicationColumn" MinWidth="220"/>
                                                     <ColumnDefinition />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Column="0" FontWeight="Bold"  FontSize="20" Margin="5,0" Text="{x:Static pres:ProjectLocales.Icon}"/>
-                                                <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Column="1" FontWeight="Bold" FontSize="20"   Margin="5,0" Text="{x:Static pres:ProjectLocales.Application}"/>
-                                                <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Column="2" FontWeight="Bold" FontSize="20"   Margin="5,0" Text="{x:Static pres:ProjectLocales.Profile}"/>
+                                                <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Column="0" FontWeight="Bold"  FontSize="14" Margin="5,0" Text="{x:Static pres:ProjectLocales.Icon}"/>
+                                                <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Column="1" FontWeight="Bold" FontSize="14"   Margin="5,0" Text="{x:Static pres:ProjectLocales.Application}"/>
+                                                <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Column="2" FontWeight="Bold" FontSize="14"   Margin="5,0" Text="{x:Static pres:ProjectLocales.Profile}"/>
                                             </Grid>
                                             <Grid>
                                                 <Grid Margin="0,5">
@@ -158,24 +224,36 @@
                                 <ColumnDefinition Width="Auto"/>
 
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="6" Width="Auto" IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}"  Height="Auto" Content="{x:Static pres:ProjectLocales.LaunchApplication}" Command="{Binding StartApplicationCommand}" CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"  Margin="5,5,10,10"/>
-                            <Button Grid.Column="1"  Width="30" FontSize="20" Command="{Binding AddAssignmentCommand}" Content="+"    Margin="10,5,5,10" Height="Auto" />
-                            <Button Grid.Column="2" Width="30" FontSize="20" Command="{Binding RemoveAssignmentCommand}" CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"  Height="Auto" Content="-" IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}"   Margin="5,5,5,10"   />
+                            <ui:Button Appearance="Primary" Grid.Column="6" Width="Auto" IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}"  Height="Auto" Content="{x:Static pres:ProjectLocales.LaunchApplication}" Command="{Binding StartApplicationCommand}" CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"  Margin="5,5,10,10"/>
+                            <ui:Button Grid.Column="1" Command="{Binding AddAssignmentCommand}" Padding="10,6" Margin="10,5,5,10" Height="Auto"><ui:SymbolIcon Symbol="Add24"/></ui:Button>
+                            <ui:Button Grid.Column="2" Command="{Binding RemoveAssignmentCommand}" CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"  Height="Auto" IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}" Padding="10,6"  Margin="5,5,5,10"><ui:SymbolIcon Symbol="Subtract24"/></ui:Button>
 
-                            <Button Grid.Column="3"  Width="30" FontSize="20" Command="{Binding EditApplicationCommand}" Content="..."  CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"  IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}"   Margin="10,5,5,10" Height="Auto" />
+                            <ui:Button Grid.Column="3" Command="{Binding EditApplicationCommand}" CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"  IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}" Padding="10,6"  Margin="10,5,5,10" Height="Auto"><ui:SymbolIcon Symbol="Edit24"/></ui:Button>
 
-                            <Button Grid.Column="4"  Width="30"  Command="{Binding MoveAssignmentUpCommand}" Content="⏶" FontSize="20"  CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"  Margin="10,5,5,10" IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}" Height="Auto"/>
-                            <Button Grid.Column="5" Width="30"  Command="{Binding MoveAssignmentDownCommand}" Content="⏷" FontSize="20" CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"   IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}"   Margin="5,5,5,10"  Height="Auto"  />
+                            <ui:Button Grid.Column="4" Command="{Binding MoveAssignmentUpCommand}" CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"  Margin="10,5,5,10" IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}" Padding="10,6" Height="Auto"><ui:SymbolIcon Symbol="ArrowUp24"/></ui:Button>
+                            <ui:Button Grid.Column="5" Command="{Binding MoveAssignmentDownCommand}" CommandParameter="{Binding ElementName=ApplicationList, Path=SelectedItem}"   IsEnabled="{Binding ElementName=ApplicationList, Path=SelectedItem, Converter={StaticResource IsNotNullConverter}}"   Margin="5,5,5,10" Padding="10,6" Height="Auto"><ui:SymbolIcon Symbol="ArrowDown24"/></ui:Button>
 
 
                         </Grid>
                     </Grid>
                 </TabItem>
-                <TabItem Header="{x:Static pres:ProjectLocales.Displays}" >
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Desktop24" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static pres:ProjectLocales.Displays}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
                     <local:MonitorManagerView   DataContext="{x:Static dsp:DisplayManagerHandler.Instance}"  IsEnabled="{Binding Settings.GlobalAutoActions, Converter={StaticResource InvertBooleanConverter}}"/>
                 </TabItem>
 
-                <TabItem Header="{x:Static pres:ProjectLocales.Settings}">
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Settings24" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Static pres:ProjectLocales.Settings}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
 
                         <Grid  >
                             <Grid.RowDefinitions>

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="AutoActions.Views.AudioActionView"
+﻿<UserControl x:Class="AutoActions.Views.AudioActionView" Background="{DynamicResource WindowBackgroundBrush}"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -18,7 +18,7 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
             <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Column="0"  Text="{Binding Name}"/>
-                <TextBlock Style="{StaticResource DefaultTextBlock}" Foreground="LightGray" Grid.Column="1"    Text="{Binding ID}"/>
+                <TextBlock Style="{StaticResource DefaultTextBlock}" Foreground="{DynamicResource SubtleForegroundBrush}" Grid.Column="1"    Text="{Binding ID}"/>
             </Grid>
 
         </DataTemplate>

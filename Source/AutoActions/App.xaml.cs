@@ -31,6 +31,11 @@ namespace AutoActions
             {
                 var application = new App();
                 application.InitializeComponent();
+                // Pick the UI theme from the current Windows setting before any window
+                // is shown. Dark overrides are layered on top of the (light) defaults.
+                ApplyWindowsTheme(application);
+                // WPF UI (Fluent) appearance: follow Windows light/dark + force red accent.
+                AutoActions.Theming.FluentThemeSetup.Initialize();
                 // Remove the leftover "Update" folder from a previous auto-update. AutoUpdate()
                 // copies the whole app there to run the updater from, but never cleans it up
                 // afterwards, so it lingered in the install directory. Safe to delete on startup.
@@ -59,6 +64,39 @@ namespace AutoActions
             catch
             {
                 // A locked leftover file must never block startup; the folder is harmless.
+            }
+        }
+
+        /// <summary>
+        /// Selects the UI theme based on the current Windows app theme. Light is the
+        /// baked-in default (Controls/AppResources.xaml); when Windows is in dark mode
+        /// the dark palette (Theming/DarkColors.xaml) is merged on top so that every
+        /// DynamicResource brush reference resolves to its dark value. Must run before
+        /// any window is created. The chosen theme is fixed for the session - changing
+        /// the Windows theme takes effect after the app is restarted.
+        /// </summary>
+        private static void ApplyWindowsTheme(App application)
+        {
+            try
+            {
+                Theme = AutoActions.Windows.UI.GetWindowsTheme() == AutoActions.Windows.WindowsTheme.Dark
+                    ? Theme.Dark
+                    : Theme.Light;
+
+                if (Theme == Theme.Dark)
+                {
+                    var darkColors = new ResourceDictionary
+                    {
+                        Source = new Uri("pack://application:,,,/Theming/DarkColors.xaml", UriKind.Absolute)
+                    };
+                    application.Resources.MergedDictionaries.Add(darkColors);
+                }
+            }
+            catch
+            {
+                // Any failure (registry read, dictionary load) is non-fatal: fall back
+                // to the light theme that is already in effect.
+                Theme = Theme.Light;
             }
         }
 

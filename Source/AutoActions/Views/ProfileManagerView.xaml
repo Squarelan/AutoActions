@@ -7,7 +7,8 @@
              xmlns:root="clr-namespace:AutoActions"
              xmlns:pres="clr-namespace:AutoActions.ProjectResources;assembly=AutoActions.ProjectResources"
              xmlns:local="clr-namespace:AutoActions.Views"
-             mc:Ignorable="d" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d"
              d:DataContext="{d:DesignInstance root:AutoActionsDaemon, IsDesignTimeCreatable=false}"
 
              d:DesignHeight="450" d:DesignWidth="800" >
@@ -21,7 +22,7 @@
     <UserControl.Resources>
         <DataTemplate x:Key="ProfileActionItemTemplate" DataType="IProfileAction">
             <Grid>
-                <Border Style="{StaticResource DefaultBorder}" Margin="5,5"/>
+                <ui:Card Margin="5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
                 <Grid  MinWidth="100" Width="300" Height="80" Margin="10,5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -70,10 +71,10 @@
         </Grid.RowDefinitions>
         <TextBlock Style="{StaticResource SubTitleTextBlock}" Grid.Column="0"  Grid.Row="0"   Text="{x:Static pres:ProjectLocales.Profiles}"/>
         <TextBlock Style="{StaticResource SubTitleTextBlock}" Grid.Column="1"  Grid.Row="0"   Text="{x:Static pres:ProjectLocales.CurrentProfile}"></TextBlock>
-        <Border Grid.Column="0"   Grid.Row="1"  Style="{StaticResource DefaultBorder}" Margin="5"/>
+        <ui:Card Grid.Column="0"   Grid.Row="1" Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
         <ListBox  Grid.Column="0"   Grid.Row="1" Margin="10"  x:Name="ProfileList"  HorizontalContentAlignment="Stretch"  ItemTemplate="{StaticResource ProfileItemTemplate}"  ItemContainerStyle="{StaticResource ListBoxItemStyle}" ItemsSource="{Binding Settings.ApplicationProfiles}" ScrollViewer.VerticalScrollBarVisibility="Auto"  Background="{x:Null}" BorderThickness="0" SelectionMode="Single"/>
         <GridSplitter/>
-        <Border Grid.Column="1" Grid.Row="1"  Style="{StaticResource DefaultBorder}"  Margin="5"/>
+        <ui:Card Grid.Column="1" Grid.Row="1"  Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
         <ScrollViewer   Grid.Column="1" Grid.Row="1" Margin="10"  HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <Grid  Margin="5" DataContext="{Binding ElementName=ProfileList, Path=SelectedItem, Mode=OneWay}" Visibility="{Binding  ElementName=ProfileList, Path=SelectedItem,Mode=OneWay, Converter={StaticResource NotNullVisibilityConverter}}" >
 
@@ -101,10 +102,10 @@
                 <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Column="0"  Grid.Row="5"   Text="{x:Static pres:ProjectLocales.AppFocusedActions}" />
                 <TextBlock Style="{StaticResource DefaultTextBlock}"  Grid.Column="0"  Grid.Row="6"   Text="{x:Static pres:ProjectLocales.AppLostFocusActions}" />
                 
-                <TextBox x:Name="NameTextBox" Grid.Column="1"  Grid.Row="0"   Text="{Binding Name, Mode=TwoWay}" Margin="10,5" FontSize="15" FontWeight="DemiBold"></TextBox>
-                <CheckBox  Grid.Column="1" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding RestartApplication, Mode=TwoWay}" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Left"  />
+                <ui:TextBox x:Name="NameTextBox" Grid.Column="1"  Grid.Row="0"   Text="{Binding Name, Mode=TwoWay}" Margin="10,5" FontSize="15" FontWeight="DemiBold"></ui:TextBox>
+                <ui:ToggleSwitch  Grid.Column="1" Grid.Row="1" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" IsChecked="{Binding RestartApplication, Mode=TwoWay}" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Left"  />
 
-                <Border Grid.Column="1"  Grid.Row="3"  Style="{StaticResource DefaultBorder}" Margin="10,2" Height="120"/>
+                <ui:Card Grid.Column="1"  Grid.Row="3" Margin="10,2" Height="120" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
                     <Grid Grid.Column="1"  Grid.Row="3" Margin="10,5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -116,7 +117,7 @@
                     </ScrollViewer>
 
                 </Grid>
-                <Border  Grid.Column="1"  Grid.Row="4"  Style="{StaticResource DefaultBorder}" Margin="10,2" Height="120"/>
+                <ui:Card  Grid.Column="1"  Grid.Row="4" Margin="10,2" Height="120" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
                 <Grid Grid.Column="1"  Grid.Row="4"  Margin="10,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -128,7 +129,7 @@
                         </ScrollViewer>
 
                 </Grid>
-                <Border Grid.Column="1"  Grid.Row="5" Style="{StaticResource DefaultBorder}" Margin="10,2" Height="120"/>
+                <ui:Card Grid.Column="1"  Grid.Row="5" Margin="10,2" Height="120" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
                 <Grid Grid.Column="1"  Grid.Row="5"  Margin="10,2">
                     <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -141,7 +142,7 @@
                         </ScrollViewer>
 
                     </Grid>
-                <Border Grid.Column="1"  Grid.Row="6" Style="{StaticResource DefaultBorder}" Margin="10,2" Height="120" />
+                <ui:Card Grid.Column="1"  Grid.Row="6" Margin="10,2" Height="120"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
                 <Grid Grid.Column="1"  Grid.Row="6" Margin="10,2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>

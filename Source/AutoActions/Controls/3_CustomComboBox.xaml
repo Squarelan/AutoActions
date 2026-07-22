@@ -11,7 +11,7 @@
             <Border Style="{StaticResource DefaultBorder}"
                   x:Name="Border" 
                   Grid.ColumnSpan="2"
-                  Background="{StaticResource ControlLightBrush}"  />
+                  Background="{DynamicResource ControlLightBrush}"  />
             <Border 
                   Grid.Column="0"
                   CornerRadius="0" 
@@ -22,7 +22,7 @@
             <Path 
                   x:Name="Arrow"
                   Grid.Column="1"     
-                  Fill="{StaticResource  GlyphBrush}"
+                  Fill="{DynamicResource GlyphBrush}"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"
                   Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
@@ -30,16 +30,16 @@
         </Grid>
         <ControlTemplate.Triggers>
             <Trigger Property="ToggleButton.IsMouseOver" Value="true">
-                <Setter TargetName="Border" Property="Background" Value="{StaticResource MouseOverBrush}" />
+                <Setter TargetName="Border" Property="Background" Value="{DynamicResource IconBackgroundBrush}" />
             </Trigger>
             <Trigger Property="ToggleButton.IsChecked" Value="true">
-                <Setter TargetName="Border" Property="Background" Value="{StaticResource AccentBrush}" />
+                <Setter TargetName="Border" Property="Background" Value="{DynamicResource IconBackgroundBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-                <Setter TargetName="Border" Property="Background" Value="{StaticResource DisabledAccentBrush}" />
-                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DisabledAccentBrush}" />
-                <Setter Property="Foreground" Value="Black"/>
-                <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource  GlyphBrush}" />
+                <Setter TargetName="Border" Property="Background" Value="{DynamicResource DisabledAccentBrush}" />
+                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource DisabledAccentBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                <Setter TargetName="Arrow" Property="Fill" Value="{DynamicResource GlyphBrush}" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -55,8 +55,8 @@
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
         <Setter Property="MinWidth" Value="120"/>
-        <Setter Property="MinHeight" Value="20"/>
-        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
 		<Setter Property="FontWeight" Value="DemiBold"/>
 		<Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
         <Setter Property="Template">
@@ -74,7 +74,7 @@
                         <ContentPresenter Name="ContentSite" IsHitTestVisible="False"  Content="{TemplateBinding SelectionBoxItem}"
                             ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                             ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
-                            Margin="5,3,23,3"
+                            Margin="10,0,26,0"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Left" />
                         <TextBox x:Name="PART_EditableTextBox" Style="{StaticResource DefaultTextBox}"
@@ -83,7 +83,7 @@
                             VerticalAlignment="Center" 
                             Margin="5,5,23,3"
                             Focusable="True" 
-                            Background="{StaticResource ControlLightBrush}"
+                            Background="{DynamicResource ControlLightBrush}"
                             Visibility="Hidden"
                             IsReadOnly="{TemplateBinding IsReadOnly}"/>
                         <Popup 
@@ -100,7 +100,7 @@
                               MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border 
                                 x:Name="DropDownBorder" Style="{StaticResource DefaultBorder}" 
-                                Background="{StaticResource ControlLightBrush}"/>
+                                Background="{DynamicResource ControlLightBrush}"/>
                                 <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
                                     <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
@@ -112,7 +112,7 @@
                             <Setter TargetName="DropDownBorder" Property="MinHeight" Value="95"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Foreground" Value="{StaticResource DisabledAccentBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource DisabledAccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsGrouping" Value="true">
                             <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
@@ -133,33 +133,5 @@
         <Style.Triggers>
         </Style.Triggers>
     </Style>
-
-    <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}">
-        <Setter Property="SnapsToDevicePixels" Value="true"/>
-        <Setter Property="Foreground" Value="Black"/>
-        <Setter Property="OverridesDefaultStyle" Value="true"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                    <Grid>
-                    <Border Name="Border" Style="{StaticResource DefaultBorder}" BorderThickness="0"                              
-                              SnapsToDevicePixels="true">
-                    </Border>
-                        <ContentPresenter />
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsHighlighted" Value="true">
-                            <Setter TargetName="Border" Property="Background" Value="{StaticResource MouseOverBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Foreground" Value="{StaticResource DisabledControlDarkColor}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-    <Style TargetType="ComboBox" BasedOn="{StaticResource StyledComboBox}"/>
 
 </ResourceDictionary>

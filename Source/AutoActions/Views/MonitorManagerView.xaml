@@ -7,7 +7,8 @@
              xmlns:pres="clr-namespace:AutoActions.ProjectResources;assembly=AutoActions.ProjectResources"
              xmlns:dsp="clr-namespace:AutoActions.Displays;assembly=AutoActions.Displays"
              xmlns:local="clr-namespace:AutoActions.Views"
-             mc:Ignorable="d" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             mc:Ignorable="d"
              d:DataContext="{d:DesignInstance dsp:DisplayManagerBase, IsDesignTimeCreatable=True}"
 
              d:DesignHeight="450" d:DesignWidth="800" >
@@ -18,7 +19,7 @@
 
         <DataTemplate x:Key="DisplayTemplate" DataType="Display">
             <Grid VerticalAlignment="Top">
-                <Border Style="{StaticResource DefaultBorder}" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Margin="10,10,10,10"/>
+                <ui:Card Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"/>
                 <Grid Margin="15">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -63,12 +64,12 @@
                     <TextBlock Style="{StaticResource DefaultTextBlock}" Grid.Column="1" Grid.Row="5" Text="{Binding ColorDepth}" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" />
 
                     <TextBlock Style="{StaticResource DefaultTextBlock}" TextTrimming="CharacterEllipsis" Grid.Column="1" Grid.Row="6" Text="{Binding GraphicsCard}" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" MaxWidth="250" ToolTip="{Binding GraphicsCard}"/>
-                    <CheckBox Style="{StaticResource ToggleStatus}" IsChecked="{Binding HDRState}" Grid.Column="1"  Grid.Row="7"  VerticalAlignment="Center" Margin="7,5,10,5" HorizontalAlignment="Left"/>
+                    <ui:ToggleSwitch IsEnabled="False" IsChecked="{Binding HDRState}" Grid.Column="1"  Grid.Row="7"  VerticalAlignment="Center" Margin="7,5,10,5" HorizontalAlignment="Left"/>
 
-                    <CheckBox Style="{StaticResource ToggleStatus}" IsChecked="{Binding IsPrimary}" Grid.Column="1"  Grid.Row="8"  VerticalAlignment="Center"  Margin="7,5,10,5" HorizontalAlignment="Left"/>
+                    <ui:ToggleSwitch IsEnabled="False" IsChecked="{Binding IsPrimary}" Grid.Column="1"  Grid.Row="8"  VerticalAlignment="Center"  Margin="7,5,10,5" HorizontalAlignment="Left"/>
 
 
-                    <CheckBox IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.GlobalAutoActions, Converter={StaticResource InvertBooleanConverter}}" Grid.Column="1" Grid.Row="9"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsChecked="{Binding Managed, Mode=TwoWay}" Margin="5" HorizontalAlignment="Left"  />
+                    <ui:ToggleSwitch IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.GlobalAutoActions, Converter={StaticResource InvertBooleanConverter}}" Grid.Column="1" Grid.Row="9"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" IsChecked="{Binding Managed, Mode=TwoWay}" Margin="5" HorizontalAlignment="Left"  />
 
                 </Grid>
             </Grid>
@@ -82,8 +83,8 @@
         </Grid.RowDefinitions>
         <TextBlock Style="{StaticResource SubTitleTextBlock}"   Grid.Row="0"   Text="{x:Static pres:ProjectLocales.Displays}"/>
 
-        <Border Grid.Row="1"  Style="{StaticResource DefaultBorder}" Margin="5">
-        </Border>
+        <ui:Card Grid.Row="1" Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch">
+        </ui:Card>
         <ScrollViewer Grid.Row="1" Margin="10" >
             <Grid>
                 <Grid.RowDefinitions>
@@ -96,7 +97,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{StaticResource DefaultTextBlock}" Text="{x:Static pres:ProjectLocales.GlobalAutoHDR}" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0" />
 
-                <CheckBox Style="{StaticResource ToggleStatus}" IsChecked="{Binding GlobalAutoActions}"  Grid.Row="0"  Grid.Column="1"   VerticalAlignment="Center" Margin="7,5,10,5" HorizontalAlignment="Left"/>
+                <ui:ToggleSwitch IsEnabled="False" IsChecked="{Binding GlobalAutoActions}"  Grid.Row="0"  Grid.Column="1"   VerticalAlignment="Center" Margin="7,5,10,5" HorizontalAlignment="Left"/>
 
                 <ItemsControl  Grid.Row="1" Grid.ColumnSpan="2"  x:Name="DisplayList" VerticalContentAlignment="Top"  HorizontalContentAlignment="Stretch" ItemsPanel="{StaticResource WrapListViewTemplate}"  ItemTemplate="{StaticResource DisplayTemplate}" ItemsSource="{Binding Displays}"  Background="{x:Null}"  BorderThickness="0"/>
             </Grid>

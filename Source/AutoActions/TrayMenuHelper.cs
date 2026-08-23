@@ -1,21 +1,17 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
 using Hardcodet.Wpf.TaskbarNotification.Interop;
+using AutoActions.ProjectResources;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using AutoActions.ProjectResources;
-using AutoActions.Displays;
-using Microsoft.Win32;
-using CodectoryCore.UI.Wpf;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace AutoActions
 {
@@ -24,15 +20,8 @@ namespace AutoActions
         public bool Initialized { get; private set; }
         TaskbarIcon _trayMenu;
 
-        private MenuItem _openButton;
-        private MenuItem _closeButton;
-        private MenuItem _appplications;
-        private MenuItem _actions;
-
-
         public event EventHandler OpenViewRequested;
         public event EventHandler CloseApplicationRequested;
-
 
         public event EventHandler<string> NewLog;
 
@@ -48,161 +37,243 @@ namespace AutoActions
                 _trayMenu.Visibility = Visibility.Visible;
                 _trayMenu.ToolTipText = ProjectLocales.AutoActions;
                 _trayMenu.Icon = ProjectLocales.MainIcon;
-                ContextMenu contextMenu = new ContextMenu();
-                _openButton = new MenuItem()
-                {
-                    Header = ProjectLocales.Open
-                };
-
-                _closeButton = new MenuItem()
-                {
-                    Header = ProjectLocales.Shutdown
-                };
-                _openButton.Click += (o, e) => OpenViewRequested?.Invoke(this, EventArgs.Empty);
-                _closeButton.Click += (o, e) => CloseApplicationRequested?.Invoke(this, EventArgs.Empty);
-                contextMenu.Items.Add(_openButton);
-                InitializeApplicationsMenuItem(contextMenu);
-                InitializeActionsMenuItem(contextMenu);
-                contextMenu.Items.Add(_closeButton);
-                _trayMenu.ContextMenu = contextMenu;
                 _trayMenu.TrayLeftMouseDown += TrayMenu_TrayLeftMouseDown;
+                _trayMenu.TrayRightMouseUp += TrayMenu_TrayRightMouseUp;
                 _trayMenu.PreviewTrayToolTipOpen += TrayMenu_PreviewTrayToolTipOpen;
                 ApplyNativeTrayToolTip();
                 CallNewLog("Tray menu initialized");
                 SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
-
-
             }
             catch
             {
                 throw; // rethrow without resetting the stack trace
             }
-
-        }
-
-        readonly object _lockActions = new object();
-
-        private void InitializeActionsMenuItem(ContextMenu contextMenu)
-        {
-            _actions = new MenuItem()
-            {
-                Header = ProjectLocales.Actions
-            };
-            contextMenu.Items.Add(_actions);
-            Globals.Instance.Settings.ActionShortcuts.CollectionChanged += (o, e) =>
-                {
-                    switch (e.Action)
-                    {
-                        case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                            foreach (var item in e.NewItems)
-                                ((BaseViewModel)item).PropertyChanged += Actions_PropertyChanged;
-                            break;
-                        case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                            foreach (var item in e.OldItems)
-                                ((BaseViewModel)item).PropertyChanged -= Actions_PropertyChanged;
-                            break;
-                    }
-                    UpdateActionItems();
-                };
-            UpdateActionItems();
-        }
-
-        private void Actions_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            UpdateActionItems();
-        }
-
-        private void UpdateActionItems()
-        {
-            lock (_lockActions)
-            {
-                _actions.Items.Clear();
-                foreach (var action in Globals.Instance.Settings.ActionShortcuts)
-                {
-                    MenuItem item = new MenuItem();
-                    item.Header = action.ShortcutName;
-                    item.Click += (o, e) => action.RunAction();
-                    _actions.Items.Add(item);
-                }
-            }
-        }
-
-        private void InitializeApplicationsMenuItem(ContextMenu contextMenu)
-        {
-            _appplications= new MenuItem()
-            {
-                Header = ProjectLocales.Applications
-            };
-            contextMenu.Items.Add(_appplications);
-            Globals.Instance.Settings.ApplicationProfileAssignments.CollectionChanged += (o, e) =>
-            {
-                switch (e.Action)
-                {
-                    case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                        foreach (var item in e.NewItems)
-                            ((BaseViewModel)item).PropertyChanged += TrayMenuHelper_PropertyChanged;
-                        break;
-                    case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
-                        foreach (var item in e.OldItems)
-                            ((BaseViewModel)item).PropertyChanged -= TrayMenuHelper_PropertyChanged;
-                        break;
-                }
-                UpdatApplicationItems();
-            };
-            UpdatApplicationItems();
-        }
-
-        private void TrayMenuHelper_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            UpdatApplicationItems();
-        }
-
-        private void UpdatApplicationItems()
-        {
-            lock (_lockActions)
-            {
-                var converter = new CodectoryCore.UI.Wpf.BitmapToBitmapImageConverter();
-                _appplications.Items.Clear();
-                foreach (var assignment in Globals.Instance.Settings.ApplicationProfileAssignments)
-                {
-                    MenuItem item = new MenuItem();
-                    ImageSource imageSource = (ImageSource)converter.Convert(assignment.Application.Icon, typeof(ImageSource), null, System.Globalization.CultureInfo.CurrentUICulture);
-                    item.Icon = new System.Windows.Controls.Image
-                    {
-                        Source = imageSource,
-                        Width = 16,
-                        Height = 16
-                    };
-                    item.Header = assignment.Application.DisplayName;
-                    item.Click += (o, e) => assignment.Application.StartApplication();
-                    _appplications.Items.Add(item);
-                }
-            }
-        }
-
-
-        private async void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
-        {
-            if (e.Mode == PowerModes.Suspend)
-            {
-                SwitchTrayIcon(false);
-            }
-            else if (e.Mode == PowerModes.Resume)
-            {
-                // Give the shell time to settle before re-adding the icon, but
-                // asynchronously — this event arrives on the UI thread, and
-                // blocking here froze the whole interface for the wait duration.
-                await System.Threading.Tasks.Task.Delay(5000);
-                SwitchTrayIcon(true);
-            }
         }
 
         private void TrayMenu_TrayLeftMouseDown(object sender, RoutedEventArgs e)
         {
-            //SwitchTrayIcon(false);
             OpenViewRequested?.Invoke(this, EventArgs.Empty);
-
         }
+
+        // --- System-rendered context menu ------------------------------------
+        // The tray context menu is built as a native Win32 menu (CreatePopupMenu +
+        // TrackPopupMenuEx) instead of a WPF ContextMenu: on Windows 11 native
+        // menus automatically get the system look (rounded corners, acrylic,
+        // system font) that a self-drawn WPF popup cannot reproduce. The menu is
+        // rebuilt on every right click, so it always reflects the current
+        // applications and action shortcuts.
+
+        private const uint CmdOpen = 1;
+        private const uint CmdShutdown = 2;
+        private const uint CmdApplicationFirst = 1000; // + submenu index
+        private const uint CmdActionFirst = 2000;      // + submenu index
+
+        private void TrayMenu_TrayRightMouseUp(object sender, RoutedEventArgs e)
+        {
+            ShowSystemContextMenu();
+        }
+
+        private void ShowSystemContextMenu()
+        {
+            IntPtr ownerWindow = GetMessageWindowHandle();
+            if (ownerWindow == IntPtr.Zero)
+            {
+                CallNewLog("System context menu: no message window handle");
+                return;
+            }
+
+            var applications = Globals.Instance.Settings.ApplicationProfileAssignments.ToList();
+            var actions = Globals.Instance.Settings.ActionShortcuts.ToList();
+
+            IntPtr menu = CreatePopupMenu();
+            if (menu == IntPtr.Zero)
+                return;
+
+            var menuBitmaps = new List<IntPtr>();
+            try
+            {
+                uint position = 0;
+                AppendMenuItem(menu, position++, CmdOpen, ProjectLocales.Open, IntPtr.Zero);
+
+                IntPtr applicationsMenu = CreatePopupMenu();
+                for (int i = 0; i < applications.Count; i++)
+                {
+                    IntPtr bitmap = CreateMenuBitmap(applications[i].Application.Icon);
+                    if (bitmap != IntPtr.Zero)
+                        menuBitmaps.Add(bitmap);
+                    AppendMenuItem(applicationsMenu, (uint)i, CmdApplicationFirst + (uint)i, applications[i].Application.DisplayName, bitmap);
+                }
+                AppendSubMenu(menu, position++, applicationsMenu, ProjectLocales.Applications);
+
+                IntPtr actionsMenu = CreatePopupMenu();
+                for (int i = 0; i < actions.Count; i++)
+                    AppendMenuItem(actionsMenu, (uint)i, CmdActionFirst + (uint)i, actions[i].ShortcutName, IntPtr.Zero);
+                AppendSubMenu(menu, position++, actionsMenu, ProjectLocales.Actions);
+
+                AppendSeparator(menu, position++);
+                AppendMenuItem(menu, position++, CmdShutdown, ProjectLocales.Shutdown, IntPtr.Zero);
+
+                // Foreground + WM_NULL: without this pair the menu would not close
+                // when the user clicks outside of it (standard tray menu pattern).
+                SetForegroundWindow(ownerWindow);
+                GetCursorPos(out POINT cursor);
+                int command = TrackPopupMenuEx(menu,
+                    TPM_RETURNCMD | TPM_RIGHTBUTTON | TPM_BOTTOMALIGN | TPM_LEFTALIGN,
+                    cursor.X, cursor.Y, ownerWindow, IntPtr.Zero);
+                PostMessageW(ownerWindow, WM_NULL, IntPtr.Zero, IntPtr.Zero);
+
+                ExecuteMenuCommand((uint)command, applications, actions);
+            }
+            catch (Exception ex)
+            {
+                CallNewLog($"System context menu failed: {ex.Message}");
+            }
+            finally
+            {
+                DestroyMenu(menu); // also destroys attached submenus
+                foreach (var bitmap in menuBitmaps)
+                    DeleteObject(bitmap);
+            }
+        }
+
+        private void ExecuteMenuCommand(uint command, List<ApplicationProfileAssignment> applications, List<ProfileActionShortcut> actions)
+        {
+            if (command == 0)
+                return; // menu dismissed without a selection
+            if (command == CmdOpen)
+            {
+                OpenViewRequested?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+            if (command == CmdShutdown)
+            {
+                CloseApplicationRequested?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+            if (command >= CmdApplicationFirst && command < CmdActionFirst)
+            {
+                int index = (int)(command - CmdApplicationFirst);
+                if (index < applications.Count)
+                    applications[index].Application.StartApplication();
+                return;
+            }
+            if (command >= CmdActionFirst)
+            {
+                int index = (int)(command - CmdActionFirst);
+                if (index < actions.Count)
+                    actions[index].RunAction();
+            }
+        }
+
+        private static void AppendMenuItem(IntPtr menu, uint position, uint id, string text, IntPtr bitmap)
+        {
+            var info = CreateMenuItemInfo();
+            info.fMask = MIIM_ID | MIIM_STRING;
+            if (bitmap != IntPtr.Zero)
+                info.fMask |= MIIM_BITMAP;
+            info.wID = id;
+            info.dwTypeData = text;
+            info.hbmpItem = bitmap;
+            InsertMenuItemW(menu, position, true, ref info);
+        }
+
+        private static void AppendSubMenu(IntPtr menu, uint position, IntPtr submenu, string text)
+        {
+            var info = CreateMenuItemInfo();
+            info.fMask = MIIM_SUBMENU | MIIM_STRING;
+            info.hSubMenu = submenu;
+            info.dwTypeData = text;
+            InsertMenuItemW(menu, position, true, ref info);
+        }
+
+        private static void AppendSeparator(IntPtr menu, uint position)
+        {
+            var info = CreateMenuItemInfo();
+            info.fMask = MIIM_FTYPE;
+            info.fType = MFT_SEPARATOR;
+            InsertMenuItemW(menu, position, true, ref info);
+        }
+
+        private static MENUITEMINFO CreateMenuItemInfo()
+        {
+            var info = new MENUITEMINFO();
+            info.cbSize = (uint)Marshal.SizeOf(typeof(MENUITEMINFO));
+            return info;
+        }
+
+        // 16x16, premultiplied 32-bpp ARGB: menu item bitmaps (hbmpItem) only
+        // render with correct transparency when supplied as PARGB DIB sections.
+        private static IntPtr CreateMenuBitmap(Bitmap icon)
+        {
+            try
+            {
+                using (var bitmap = new Bitmap(16, 16, PixelFormat.Format32bppArgb))
+                {
+                    using (var graphics = Graphics.FromImage(bitmap))
+                    {
+                        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        if (icon != null)
+                            graphics.DrawImage(icon, new Rectangle(0, 0, 16, 16));
+                        else
+                            graphics.DrawIcon(SystemIcons.Application, new Rectangle(0, 0, 16, 16));
+                    }
+                    return CreatePremultipliedAlphaBitmap(bitmap);
+                }
+            }
+            catch
+            {
+                return IntPtr.Zero; // a broken icon must not break the menu
+            }
+        }
+
+        private static IntPtr CreatePremultipliedAlphaBitmap(Bitmap source)
+        {
+            var bounds = new Rectangle(0, 0, source.Width, source.Height);
+            var data = source.LockBits(bounds, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            try
+            {
+                var info = new BITMAPINFO();
+                info.bmiHeader.biSize = (uint)Marshal.SizeOf(typeof(BITMAPINFOHEADER));
+                info.bmiHeader.biWidth = source.Width;
+                info.bmiHeader.biHeight = -source.Height; // top-down rows
+                info.bmiHeader.biPlanes = 1;
+                info.bmiHeader.biBitCount = 32;
+                info.bmiHeader.biCompression = BI_RGB;
+
+                IntPtr hBitmap = CreateDIBSection(IntPtr.Zero, ref info, DIB_RGB_COLORS, out IntPtr bits, IntPtr.Zero, 0);
+                if (hBitmap == IntPtr.Zero)
+                    return IntPtr.Zero;
+
+                int byteCount = source.Width * source.Height * 4;
+                var pixels = new byte[byteCount];
+                Marshal.Copy(data.Scan0, pixels, 0, byteCount);
+                for (int i = 0; i < byteCount; i += 4)
+                {
+                    byte alpha = pixels[i + 3];
+                    pixels[i] = (byte)(pixels[i] * alpha / 255);         // B
+                    pixels[i + 1] = (byte)(pixels[i + 1] * alpha / 255); // G
+                    pixels[i + 2] = (byte)(pixels[i + 2] * alpha / 255); // R
+                }
+                Marshal.Copy(pixels, 0, bits, byteCount);
+                return hBitmap;
+            }
+            finally
+            {
+                source.UnlockBits(data);
+            }
+        }
+
+        private IntPtr GetMessageWindowHandle()
+        {
+            // The library's message window is internal; reach it via reflection
+            // (library version is pinned to 1.1.0).
+            var sink = typeof(TaskbarIcon).GetField("messageSink", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(_trayMenu);
+            var handle = sink?.GetType().GetProperty("MessageWindowHandle",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)?.GetValue(sink);
+            return handle is IntPtr ptr ? ptr : IntPtr.Zero;
+        }
+
+        // --- Native tray tooltip ----------------------------------------------
 
         private void TrayMenu_PreviewTrayToolTipOpen(object sender, RoutedEventArgs e)
         {
@@ -252,6 +323,115 @@ namespace AutoActions
             }
         }
 
+        // --- Win32 interop -----------------------------------------------------
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct MENUITEMINFO
+        {
+            public uint cbSize;
+            public uint fMask;
+            public uint fType;
+            public uint fState;
+            public uint wID;
+            public IntPtr hSubMenu;
+            public IntPtr hbmpChecked;
+            public IntPtr hbmpUnchecked;
+            public IntPtr dwItemData;
+            [MarshalAs(UnmanagedType.LPTStr)]
+            public string dwTypeData;
+            public uint cch;
+            public IntPtr hbmpItem;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct BITMAPINFOHEADER
+        {
+            public uint biSize;
+            public int biWidth;
+            public int biHeight;
+            public ushort biPlanes;
+            public ushort biBitCount;
+            public uint biCompression;
+            public uint biSizeImage;
+            public int biXPelsPerMeter;
+            public int biYPelsPerMeter;
+            public uint biClrUsed;
+            public uint biClrImportant;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct BITMAPINFO
+        {
+            public BITMAPINFOHEADER bmiHeader;
+            public uint bmiColors; // placeholder RGBQUAD for structure alignment
+        }
+
+        private const uint MIIM_ID = 0x2;
+        private const uint MIIM_SUBMENU = 0x4;
+        private const uint MIIM_STRING = 0x40;
+        private const uint MIIM_BITMAP = 0x80;
+        private const uint MIIM_FTYPE = 0x100;
+        private const uint MFT_SEPARATOR = 0x1;
+        private const uint TPM_LEFTALIGN = 0x0;
+        private const uint TPM_RIGHTBUTTON = 0x2;
+        private const uint TPM_BOTTOMALIGN = 0x20;
+        private const uint TPM_RETURNCMD = 0x100;
+        private const uint WM_NULL = 0x0;
+        private const uint BI_RGB = 0;
+        private const uint DIB_RGB_COLORS = 0;
+
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr CreatePopupMenu();
+
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        private static extern bool InsertMenuItemW(IntPtr menu, uint position, bool byPosition, ref MENUITEMINFO info);
+
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        private static extern int TrackPopupMenuEx(IntPtr menu, uint flags, int x, int y, IntPtr window, IntPtr parameters);
+
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        private static extern bool DestroyMenu(IntPtr menu);
+
+        [DllImport("user32.dll", ExactSpelling = true)]
+        private static extern bool SetForegroundWindow(IntPtr window);
+
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        private static extern bool GetCursorPos(out POINT point);
+
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        private static extern bool PostMessageW(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr CreateDIBSection(IntPtr hdc, ref BITMAPINFO info, uint usage, out IntPtr bits, IntPtr section, uint offset);
+
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+        private static extern bool DeleteObject(IntPtr hObject);
+
+        // --- Power mode --------------------------------------------------------
+
+        private async void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            if (e.Mode == PowerModes.Suspend)
+            {
+                SwitchTrayIcon(false);
+            }
+            else if (e.Mode == PowerModes.Resume)
+            {
+                // Give the shell time to settle before re-adding the icon, but
+                // asynchronously — this event arrives on the UI thread, and
+                // blocking here froze the whole interface for the wait duration.
+                await Task.Delay(5000);
+                SwitchTrayIcon(true);
+            }
+        }
+
         private void CallNewLog(string message)
         {
             NewLog?.Invoke(this, message);
@@ -259,7 +439,7 @@ namespace AutoActions
 
         public void SwitchTrayIcon(bool showTray)
         {
-            _trayMenu.Visibility = showTray ? System.Windows.Visibility.Visible : Visibility.Hidden;
+            _trayMenu.Visibility = showTray ? Visibility.Visible : Visibility.Hidden;
             if (showTray)
                 ApplyNativeTrayToolTip();
         }

@@ -1,4 +1,4 @@
-function buildVS
+﻿function buildVS
 {
     param
     (
@@ -24,8 +24,10 @@ function buildVS
 
         Write-Host "Building x64 $($path)" -foregroundcolor green
         & "$($msBuildExe)" "$($path)" /t:Build /m /property:Configuration=Release /property:Platform=x64
+        if ($LASTEXITCODE -ne 0) { throw "x64 build failed (exit code $LASTEXITCODE) — aborting so no stale files get packaged." }
 		Write-Host "Building x86 $($path)" -foregroundcolor green
         & "$($msBuildExe)" "$($path)" /t:Build /m /property:Configuration=Release /property:Platform=x86
+        if ($LASTEXITCODE -ne 0) { throw "x86 build failed (exit code $LASTEXITCODE) — aborting so no stale files get packaged." }
 
 		$x64zip = ".\Releases\Release_AutoActions_$($version)_x64.zip"
 		$x86zip = ".\Releases\Release_AutoActions_$($version)_x86.zip"

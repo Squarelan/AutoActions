@@ -437,26 +437,17 @@
             <Trigger Property="IsEnabled" Value="False">
               <Setter Property="Opacity" Value="0.4" />
             </Trigger>
-            <!-- Separator role: hide the content row, show a thin line -->
-            <Trigger Property="Role" Value="Separator">
-              <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
-              <Setter TargetName="PART_SubmenuArrow" Property="Visibility" Value="Collapsed" />
-              <Setter Property="Padding" Value="0" />
-              <Setter Property="MinHeight" Value="9" />
-              <Setter Property="Template">
-                <Setter.Value>
-                  <ControlTemplate TargetType="{x:Type MenuItem}">
-                    <Border Background="{StaticResource TrayMenuSeparatorBrush}" Height="1" Margin="10,3" />
-                  </ControlTemplate>
-                </Setter.Value>
-              </Setter>
-            </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
   </Style>
   <!-- Default ContextMenu style that applies the template above. -->
+  <!-- NOTE: ItemContainerStyle is NOT set here, because it would also be
+         applied to Separator items (which are not MenuItem), causing a
+         "Style for MenuItem cannot be applied to type Separator" crash.
+         Instead, the MenuItem style is applied per-item in code
+         (TrayMenuHelper.RebuildMenuItems sets each MenuItem.Style). -->
   <Style x:Key="TrayContextMenuStyle" TargetType="{x:Type ContextMenu}">
     <Setter Property="OverridesDefaultStyle" Value="True" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
@@ -465,7 +456,22 @@
     <Setter Property="HasDropShadow" Value="False" />
     <Setter Property="Padding" Value="0" />
     <Setter Property="Template" Value="{StaticResource TrayContextMenuTemplate}" />
-    <Setter Property="ItemContainerStyle" Value="{StaticResource TrayMenuItemStyle}" />
+    <!-- Separator style scoped to this ContextMenu only. -->
+    <Style.Resources>
+      <Style TargetType="{x:Type Separator}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="10,4" />
+        <Setter Property="Background" Value="{StaticResource TrayMenuSeparatorBrush}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Separator}">
+              <Border Height="1" Margin="{TemplateBinding Margin}" Background="{TemplateBinding Background}" />
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </Style.Resources>
   </Style>
   <!--This XAML merge infrastructure was provided by http://michaelscodingspot.com/-->
 </ResourceDictionary>

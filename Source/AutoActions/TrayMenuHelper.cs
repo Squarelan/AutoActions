@@ -94,23 +94,29 @@ namespace AutoActions
 
             menu.Items.Clear();
 
+            // The MenuItem style is applied per-item (not via
+            // ContextMenu.ItemContainerStyle) because ItemContainerStyle would
+            // also be applied to Separator items, causing a type mismatch crash.
+            var menuItemStyle = (System.Windows.Style)Application.Current.FindResource("TrayMenuItemStyle");
+
             var applications = Globals.Instance.Settings.ApplicationProfileAssignments.ToList();
             var actions = Globals.Instance.Settings.ActionShortcuts.ToList();
 
             // Open
-            var openItem = new MenuItem { Header = ProjectLocales.Open, Tag = "Open" };
+            var openItem = new MenuItem { Header = ProjectLocales.Open, Tag = "Open", Style = menuItemStyle };
             openItem.Click += MenuItem_Click;
             menu.Items.Add(openItem);
 
             // Applications submenu (with icons)
-            var appsMenu = new MenuItem { Header = ProjectLocales.Applications };
+            var appsMenu = new MenuItem { Header = ProjectLocales.Applications, Style = menuItemStyle };
             for (int i = 0; i < applications.Count; i++)
             {
                 var app = applications[i];
                 var item = new MenuItem
                 {
                     Header = app.Application.DisplayName,
-                    Tag = Tuple.Create("App", i)
+                    Tag = Tuple.Create("App", i),
+                    Style = menuItemStyle
                 };
                 System.Windows.Controls.Image iconImg = ToImage(app.Application.Icon);
                 if (iconImg != null)
@@ -123,13 +129,14 @@ namespace AutoActions
             menu.Items.Add(appsMenu);
 
             // Actions submenu
-            var actionsMenu = new MenuItem { Header = ProjectLocales.Actions };
+            var actionsMenu = new MenuItem { Header = ProjectLocales.Actions, Style = menuItemStyle };
             for (int i = 0; i < actions.Count; i++)
             {
                 var item = new MenuItem
                 {
                     Header = actions[i].ShortcutName,
-                    Tag = Tuple.Create("Action", i)
+                    Tag = Tuple.Create("Action", i),
+                    Style = menuItemStyle
                 };
                 item.Click += MenuItem_Click;
                 actionsMenu.Items.Add(item);
@@ -140,7 +147,7 @@ namespace AutoActions
 
             // Separator + Shutdown
             menu.Items.Add(new Separator());
-            var shutdownItem = new MenuItem { Header = ProjectLocales.Shutdown, Tag = "Shutdown" };
+            var shutdownItem = new MenuItem { Header = ProjectLocales.Shutdown, Tag = "Shutdown", Style = menuItemStyle };
             shutdownItem.Click += MenuItem_Click;
             menu.Items.Add(shutdownItem);
         }

@@ -12,7 +12,6 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -42,8 +41,27 @@ namespace AutoActions
                 _trayMenu.ToolTipText = ProjectLocales.AutoActions;
                 _trayMenu.Icon = ProjectLocales.MainIcon;
                 _trayMenu.TrayLeftMouseDown += TrayMenu_TrayLeftMouseDown;
-                _trayMenu.TrayRightMouseUp += TrayMenu_TrayRightMouseUp;
                 _trayMenu.PreviewTrayToolTipOpen += TrayMenu_PreviewTrayToolTipOpen;
+
+                // Build the Fluent-styled ContextMenu once and assign it to the
+                // TaskbarIcon. The library automatically shows the assigned
+                // ContextMenu when the user right-clicks the tray icon — its
+                // internal popup host (the message window) correctly manages
+                // focus, click-outside dismissal, and submenu placement.
+                // Subscribing to TrayRightMouseUp and manually setting
+                // IsOpen/PlacementTarget left the menu stuck open and broke
+                // submenu positioning, because the host window was minimized.
+                var menu = new ContextMenu
+                {
+                    Style = (System.Windows.Style)Application.Current.FindResource("TrayContextMenuStyle")
+                };
+                _trayMenu.ContextMenu = menu;
+                // Rebuild items on every right click so the menu always
+                // reflects the current applications and action shortcuts.
+                // TrayRightMouseUp fires before the library opens the menu,
+                // so the rebuilt items are shown.
+                _trayMenu.TrayRightMouseUp += (s, e) => RebuildMenuItems();
+
                 ApplyNativeTrayToolTip();
                 CallNewLog("Tray menu initialized");
                 SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
@@ -63,99 +81,68 @@ namespace AutoActions
         // The tray context menu is a WPF ContextMenu with a custom template
         // (Controls/4_TrayMenuStyles.xaml): rounded corners, system font,
         // semi-transparent surface, WinUI-style hover highlight, proper
-        // submenu arrow. Rebuilt on every right click so it always reflects
-        // the current applications and action shortcuts. Colors are
-        // DynamicResource, so the menu follows the light/dark palette
-        // merged at startup automatically.
+        // submenu arrow. Items are rebuilt on every right click (TrayRightMouseUp)
+        // so the menu always reflects the current applications and action
+        // shortcuts. Colors are DynamicResource, so the menu follows the
+        // light/dark palette merged at startup automatically.
 
-        private void TrayMenu_TrayRightMouseUp(object sender, RoutedEventArgs e)
+        private void RebuildMenuItems()
         {
-            ShowFluentContextMenu();
-        }
+            var menu = _trayMenu.ContextMenu;
+            if (menu == null)
+                return;
 
-        private void ShowFluentContextMenu()
-        {
-            try
+            menu.Items.Clear();
+
+            var applications = Globals.Instance.Settings.ApplicationProfileAssignments.ToList();
+            var actions = Globals.Instance.Settings.ActionShortcuts.ToList();
+
+            // Open
+            var openItem = new MenuItem { Header = ProjectLocales.Open, Tag = "Open" };
+            openItem.Click += MenuItem_Click;
+            menu.Items.Add(openItem);
+
+            // Applications submenu (with icons)
+            var appsMenu = new MenuItem { Header = ProjectLocales.Applications };
+            for (int i = 0; i < applications.Count; i++)
             {
-                var applications = Globals.Instance.Settings.ApplicationProfileAssignments.ToList();
-                var actions = Globals.Instance.Settings.ActionShortcuts.ToList();
-
-                var menu = new ContextMenu
+                var app = applications[i];
+                var item = new MenuItem
                 {
-                    Style = (System.Windows.Style)Application.Current.FindResource("TrayContextMenuStyle")
+                    Header = app.Application.DisplayName,
+                    Tag = Tuple.Create("App", i)
                 };
-
-                // Open
-                var openItem = new MenuItem { Header = ProjectLocales.Open, Tag = "Open" };
-                openItem.Click += MenuItem_Click;
-                menu.Items.Add(openItem);
-
-                // Applications submenu (with icons)
-                var appsMenu = new MenuItem { Header = ProjectLocales.Applications };
-                for (int i = 0; i < applications.Count; i++)
-                {
-                    var app = applications[i];
-                    var item = new MenuItem
-                    {
-                        Header = app.Application.DisplayName,
-                        Tag = Tuple.Create("App", i)
-                    };
-                    System.Windows.Controls.Image iconImg = ToImage(app.Application.Icon);
-                    if (iconImg != null)
-                        item.Icon = iconImg;
-                    item.Click += MenuItem_Click;
-                    appsMenu.Items.Add(item);
-                }
-                if (appsMenu.Items.Count == 0)
-                    appsMenu.IsEnabled = false;
-                menu.Items.Add(appsMenu);
-
-                // Actions submenu
-                var actionsMenu = new MenuItem { Header = ProjectLocales.Actions };
-                for (int i = 0; i < actions.Count; i++)
-                {
-                    var item = new MenuItem
-                    {
-                        Header = actions[i].ShortcutName,
-                        Tag = Tuple.Create("Action", i)
-                    };
-                    item.Click += MenuItem_Click;
-                    actionsMenu.Items.Add(item);
-                }
-                if (actionsMenu.Items.Count == 0)
-                    actionsMenu.IsEnabled = false;
-                menu.Items.Add(actionsMenu);
-
-                // Separator + Shutdown
-                menu.Items.Add(new Separator());
-                var shutdownItem = new MenuItem { Header = ProjectLocales.Shutdown, Tag = "Shutdown" };
-                shutdownItem.Click += MenuItem_Click;
-                menu.Items.Add(shutdownItem);
-
-                // Position the menu at the cursor, anchored above the taskbar
-                // (the WPF ContextMenu cannot reliably infer anchor when
-                // triggered from the tray, so we use Point placement).
-                GetCursorPos(out POINT cursor);
-                menu.Placement = PlacementMode.Absolute;
-                menu.PlacementRectangle = new Rect(cursor.X, cursor.Y, 0, 0);
-
-                // IsOpen must be set after the ContextMenu is attached to a
-                // visual host; the simplest robust path is to assign it to
-                // the TaskbarIcon's parent window (the hidden message window
-                // is not a WPF Visual). The application's main window works.
-                Window host = Application.Current.MainWindow;
-                if (host == null)
-                {
-                    CallNewLog("Fluent context menu: no host window");
-                    return;
-                }
-                menu.PlacementTarget = host;
-                menu.IsOpen = true;
+                System.Windows.Controls.Image iconImg = ToImage(app.Application.Icon);
+                if (iconImg != null)
+                    item.Icon = iconImg;
+                item.Click += MenuItem_Click;
+                appsMenu.Items.Add(item);
             }
-            catch (Exception ex)
+            if (appsMenu.Items.Count == 0)
+                appsMenu.IsEnabled = false;
+            menu.Items.Add(appsMenu);
+
+            // Actions submenu
+            var actionsMenu = new MenuItem { Header = ProjectLocales.Actions };
+            for (int i = 0; i < actions.Count; i++)
             {
-                CallNewLog($"Fluent context menu failed: {ex.Message}");
+                var item = new MenuItem
+                {
+                    Header = actions[i].ShortcutName,
+                    Tag = Tuple.Create("Action", i)
+                };
+                item.Click += MenuItem_Click;
+                actionsMenu.Items.Add(item);
             }
+            if (actionsMenu.Items.Count == 0)
+                actionsMenu.IsEnabled = false;
+            menu.Items.Add(actionsMenu);
+
+            // Separator + Shutdown
+            menu.Items.Add(new Separator());
+            var shutdownItem = new MenuItem { Header = ProjectLocales.Shutdown, Tag = "Shutdown" };
+            shutdownItem.Click += MenuItem_Click;
+            menu.Items.Add(shutdownItem);
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -264,18 +251,6 @@ namespace AutoActions
                 CallNewLog($"Applying native tray tooltip failed: {ex.Message}");
             }
         }
-
-        // --- Win32 interop (cursor position only) ----------------------------
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT
-        {
-            public int X;
-            public int Y;
-        }
-
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
-        private static extern bool GetCursorPos(out POINT point);
 
         // --- Power mode --------------------------------------------------------
 

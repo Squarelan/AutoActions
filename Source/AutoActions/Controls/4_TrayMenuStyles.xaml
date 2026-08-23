@@ -1,0 +1,150 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================================================= -->
+    <!--  TRAY CONTEXT MENU — FLUENT STYLE                             -->
+    <!--  A self-contained WPF ContextMenu template: rounded corners,  -->
+    <!--  system font, semi-transparent surface, WinUI-style hover,    -->
+    <!--  and proper submenu arrow. Used by TrayMenuHelper for the      -->
+    <!--  tray right-click menu.                                        -->
+    <!--                                                                -->
+    <!--  Colors are DynamicResource so they follow the light/dark     -->
+    <!--  palette merged at startup (AppResources + DarkColors).       -->
+    <!--  The surface uses a semi-opaque brush that mimics the Fluent   -->
+    <!--  Acrylic/Mica look without requiring DWM backdrop (which is   -->
+    <!--  incompatible with WPF AllowsTransparency popups on .NET FW). -->
+    <!-- ============================================================= -->
+
+    <!-- Tray menu surface brush: ~92% opaque neutral. Resolves per-theme. -->
+    <SolidColorBrush x:Key="TrayMenuSurfaceBrush" Color="{DynamicResource WindowColor}" Opacity="0.92" />
+    <SolidColorBrush x:Key="TrayMenuBorderBrush" Color="{DynamicResource ControlMediumColor}" Opacity="0.6" />
+    <SolidColorBrush x:Key="TrayMenuHoverBrush" Color="{DynamicResource AccentColor}" Opacity="0.12" />
+    <SolidColorBrush x:Key="TrayMenuSeparatorBrush" Color="{DynamicResource GlyphColor}" Opacity="0.25" />
+
+    <!-- Top-level ContextMenu template. -->
+    <ControlTemplate x:Key="TrayContextMenuTemplate" TargetType="{x:Type ContextMenu}">
+        <Border Background="{StaticResource TrayMenuSurfaceBrush}"
+                BorderBrush="{StaticResource TrayMenuBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="2"
+                SnapsToDevicePixels="True">
+            <StackPanel IsItemsHost="True"
+                        KeyboardNavigation.DirectionalNavigation="Cycle"
+                        Margin="0" />
+        </Border>
+    </ControlTemplate>
+
+    <!-- MenuItem template — supports: header item, normal item, separator, submenu. -->
+    <Style x:Key="TrayMenuItemStyle" TargetType="{x:Type MenuItem}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type MenuItem}">
+                    <Grid Background="Transparent">
+                        <!-- Rounded hover/selection highlight -->
+                        <Border x:Name="PART_Hover"
+                                Background="Transparent"
+                                CornerRadius="4"
+                                Margin="2,1" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />  <!-- icon -->
+                                <ColumnDefinition Width="*" />     <!-- header -->
+                                <ColumnDefinition Width="Auto" />  <!-- submenu arrow -->
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter x:Name="Icon"
+                                              Grid.Column="0"
+                                              Content="{TemplateBinding Icon}"
+                                              ContentSource="Icon"
+                                              Margin="0,0,10,0"
+                                              VerticalAlignment="Center"
+                                              Width="16" Height="16" />
+                            <ContentPresenter Grid.Column="1"
+                                              Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                              ContentStringFormat="{TemplateBinding HeaderStringFormat}"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              Margin="{TemplateBinding Padding}" />
+                            <!-- Submenu arrow: shown only when this item hosts a submenu -->
+                            <Path x:Name="PART_SubmenuArrow"
+                                  Grid.Column="2"
+                                  Visibility="Collapsed"
+                                  Fill="{DynamicResource GlyphBrush}"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Center"
+                                  Margin="8,0,4,0"
+                                  Data="M0,0 L6,5 L0,10 Z" />
+                            <!-- Popup for submenu -->
+                            <Popup x:Name="PART_Popup"
+                                   Placement="Right"
+                                   AllowsTransparency="True"
+                                   IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="{StaticResource TrayMenuSurfaceBrush}"
+                                        BorderBrush="{StaticResource TrayMenuBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="2"
+                                        SnapsToDevicePixels="True">
+                                    <StackPanel IsItemsHost="True"
+                                                KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Show arrow + don't toggle popup for items that have a submenu -->
+                        <Trigger Property="HasItems" Value="True">
+                            <Setter TargetName="PART_SubmenuArrow" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <!-- Hover -->
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="PART_Hover" Property="Background" Value="{StaticResource TrayMenuHoverBrush}" />
+                        </Trigger>
+                        <!-- Disabled -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                        </Trigger>
+                        <!-- Separator role: hide the content row, show a thin line -->
+                        <Trigger Property="Role" Value="Separator">
+                            <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PART_SubmenuArrow" Property="Visibility" Value="Collapsed" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="MinHeight" Value="9" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type MenuItem}">
+                                        <Border Background="{StaticResource TrayMenuSeparatorBrush}"
+                                                Height="1"
+                                                Margin="10,3" />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Default ContextMenu style that applies the template above. -->
+    <Style x:Key="TrayContextMenuStyle" TargetType="{x:Type ContextMenu}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="HasDropShadow" Value="False" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template" Value="{StaticResource TrayContextMenuTemplate}" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource TrayMenuItemStyle}" />
+    </Style>
+
+</ResourceDictionary>

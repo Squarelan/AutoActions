@@ -5,13 +5,17 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace AutoActions
 {
@@ -55,222 +59,160 @@ namespace AutoActions
             OpenViewRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        // --- System-rendered context menu ------------------------------------
-        // The tray context menu is built as a native Win32 menu (CreatePopupMenu +
-        // TrackPopupMenuEx) instead of a WPF ContextMenu: on Windows 11 native
-        // menus automatically get the system look (rounded corners, acrylic,
-        // system font) that a self-drawn WPF popup cannot reproduce. The menu is
-        // rebuilt on every right click, so it always reflects the current
-        // applications and action shortcuts.
-
-        private const uint CmdOpen = 1;
-        private const uint CmdShutdown = 2;
-        private const uint CmdApplicationFirst = 1000; // + submenu index
-        private const uint CmdActionFirst = 2000;      // + submenu index
+        // --- Fluent-styled WPF context menu ---------------------------------
+        // The tray context menu is a WPF ContextMenu with a custom template
+        // (Controls/4_TrayMenuStyles.xaml): rounded corners, system font,
+        // semi-transparent surface, WinUI-style hover highlight, proper
+        // submenu arrow. Rebuilt on every right click so it always reflects
+        // the current applications and action shortcuts. Colors are
+        // DynamicResource, so the menu follows the light/dark palette
+        // merged at startup automatically.
 
         private void TrayMenu_TrayRightMouseUp(object sender, RoutedEventArgs e)
         {
-            ShowSystemContextMenu();
+            ShowFluentContextMenu();
         }
 
-        private void ShowSystemContextMenu()
+        private void ShowFluentContextMenu()
         {
-            IntPtr ownerWindow = GetMessageWindowHandle();
-            if (ownerWindow == IntPtr.Zero)
+            try
             {
-                CallNewLog("System context menu: no message window handle");
-                return;
+                var applications = Globals.Instance.Settings.ApplicationProfileAssignments.ToList();
+                var actions = Globals.Instance.Settings.ActionShortcuts.ToList();
+
+                var menu = new ContextMenu
+                {
+                    Style = (System.Windows.Style)Application.Current.FindResource("TrayContextMenuStyle")
+                };
+
+                // Open
+                var openItem = new MenuItem { Header = ProjectLocales.Open, Tag = "Open" };
+                openItem.Click += MenuItem_Click;
+                menu.Items.Add(openItem);
+
+                // Applications submenu (with icons)
+                var appsMenu = new MenuItem { Header = ProjectLocales.Applications };
+                for (int i = 0; i < applications.Count; i++)
+                {
+                    var app = applications[i];
+                    var item = new MenuItem
+                    {
+                        Header = app.Application.DisplayName,
+                        Tag = Tuple.Create("App", i)
+                    };
+                    System.Windows.Controls.Image iconImg = ToImage(app.Application.Icon);
+                    if (iconImg != null)
+                        item.Icon = iconImg;
+                    item.Click += MenuItem_Click;
+                    appsMenu.Items.Add(item);
+                }
+                if (appsMenu.Items.Count == 0)
+                    appsMenu.IsEnabled = false;
+                menu.Items.Add(appsMenu);
+
+                // Actions submenu
+                var actionsMenu = new MenuItem { Header = ProjectLocales.Actions };
+                for (int i = 0; i < actions.Count; i++)
+                {
+                    var item = new MenuItem
+                    {
+                        Header = actions[i].ShortcutName,
+                        Tag = Tuple.Create("Action", i)
+                    };
+                    item.Click += MenuItem_Click;
+                    actionsMenu.Items.Add(item);
+                }
+                if (actionsMenu.Items.Count == 0)
+                    actionsMenu.IsEnabled = false;
+                menu.Items.Add(actionsMenu);
+
+                // Separator + Shutdown
+                menu.Items.Add(new Separator());
+                var shutdownItem = new MenuItem { Header = ProjectLocales.Shutdown, Tag = "Shutdown" };
+                shutdownItem.Click += MenuItem_Click;
+                menu.Items.Add(shutdownItem);
+
+                // Position the menu at the cursor, anchored above the taskbar
+                // (the WPF ContextMenu cannot reliably infer anchor when
+                // triggered from the tray, so we use Point placement).
+                GetCursorPos(out POINT cursor);
+                menu.Placement = PlacementMode.Absolute;
+                menu.PlacementRectangle = new Rect(cursor.X, cursor.Y, 0, 0);
+
+                // IsOpen must be set after the ContextMenu is attached to a
+                // visual host; the simplest robust path is to assign it to
+                // the TaskbarIcon's parent window (the hidden message window
+                // is not a WPF Visual). The application's main window works.
+                Window host = Application.Current.MainWindow;
+                if (host == null)
+                {
+                    CallNewLog("Fluent context menu: no host window");
+                    return;
+                }
+                menu.PlacementTarget = host;
+                menu.IsOpen = true;
             }
+            catch (Exception ex)
+            {
+                CallNewLog($"Fluent context menu failed: {ex.Message}");
+            }
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is MenuItem item) || !(item.Tag is object tag))
+                return;
 
             var applications = Globals.Instance.Settings.ApplicationProfileAssignments.ToList();
             var actions = Globals.Instance.Settings.ActionShortcuts.ToList();
 
-            IntPtr menu = CreatePopupMenu();
-            if (menu == IntPtr.Zero)
+            if (tag is string s)
+            {
+                if (s == "Open")
+                    OpenViewRequested?.Invoke(this, EventArgs.Empty);
+                else if (s == "Shutdown")
+                    CloseApplicationRequested?.Invoke(this, EventArgs.Empty);
                 return;
+            }
 
-            var menuBitmaps = new List<IntPtr>();
+            if (tag is Tuple<string, int> t)
+            {
+                if (t.Item1 == "App" && t.Item2 < applications.Count)
+                    applications[t.Item2].Application.StartApplication();
+                else if (t.Item1 == "Action" && t.Item2 < actions.Count)
+                    actions[t.Item2].RunAction();
+            }
+        }
+
+        /// <summary>
+        /// Converts a System.Drawing.Bitmap (the type ApplicationItem.Icon
+        /// holds) to a frozen WPF BitmapSource sized for a 16x16 menu icon.
+        /// Returns null on failure so the menu still shows without an icon.
+        /// </summary>
+        private static System.Windows.Controls.Image ToImage(Bitmap bitmap)
+        {
+            if (bitmap == null)
+                return null;
             try
             {
-                uint position = 0;
-                AppendMenuItem(menu, position++, CmdOpen, ProjectLocales.Open, IntPtr.Zero);
-
-                IntPtr applicationsMenu = CreatePopupMenu();
-                for (int i = 0; i < applications.Count; i++)
+                BitmapSource bs = Imaging.CreateBitmapSourceFromHBitmap(
+                    bitmap.GetHbitmap(),
+                    IntPtr.Zero,
+                    Int32Rect.Empty,
+                    BitmapSizeOptions.FromWidthAndHeight(16, 16));
+                bs.Freeze();
+                return new System.Windows.Controls.Image
                 {
-                    IntPtr bitmap = CreateMenuBitmap(applications[i].Application.Icon);
-                    if (bitmap != IntPtr.Zero)
-                        menuBitmaps.Add(bitmap);
-                    AppendMenuItem(applicationsMenu, (uint)i, CmdApplicationFirst + (uint)i, applications[i].Application.DisplayName, bitmap);
-                }
-                AppendSubMenu(menu, position++, applicationsMenu, ProjectLocales.Applications);
-
-                IntPtr actionsMenu = CreatePopupMenu();
-                for (int i = 0; i < actions.Count; i++)
-                    AppendMenuItem(actionsMenu, (uint)i, CmdActionFirst + (uint)i, actions[i].ShortcutName, IntPtr.Zero);
-                AppendSubMenu(menu, position++, actionsMenu, ProjectLocales.Actions);
-
-                AppendSeparator(menu, position++);
-                AppendMenuItem(menu, position++, CmdShutdown, ProjectLocales.Shutdown, IntPtr.Zero);
-
-                // Foreground + WM_NULL: without this pair the menu would not close
-                // when the user clicks outside of it (standard tray menu pattern).
-                SetForegroundWindow(ownerWindow);
-                GetCursorPos(out POINT cursor);
-                int command = TrackPopupMenuEx(menu,
-                    TPM_RETURNCMD | TPM_RIGHTBUTTON | TPM_BOTTOMALIGN | TPM_LEFTALIGN,
-                    cursor.X, cursor.Y, ownerWindow, IntPtr.Zero);
-                PostMessageW(ownerWindow, WM_NULL, IntPtr.Zero, IntPtr.Zero);
-
-                ExecuteMenuCommand((uint)command, applications, actions);
-            }
-            catch (Exception ex)
-            {
-                CallNewLog($"System context menu failed: {ex.Message}");
-            }
-            finally
-            {
-                DestroyMenu(menu); // also destroys attached submenus
-                foreach (var bitmap in menuBitmaps)
-                    DeleteObject(bitmap);
-            }
-        }
-
-        private void ExecuteMenuCommand(uint command, List<ApplicationProfileAssignment> applications, List<ProfileActionShortcut> actions)
-        {
-            if (command == 0)
-                return; // menu dismissed without a selection
-            if (command == CmdOpen)
-            {
-                OpenViewRequested?.Invoke(this, EventArgs.Empty);
-                return;
-            }
-            if (command == CmdShutdown)
-            {
-                CloseApplicationRequested?.Invoke(this, EventArgs.Empty);
-                return;
-            }
-            if (command >= CmdApplicationFirst && command < CmdActionFirst)
-            {
-                int index = (int)(command - CmdApplicationFirst);
-                if (index < applications.Count)
-                    applications[index].Application.StartApplication();
-                return;
-            }
-            if (command >= CmdActionFirst)
-            {
-                int index = (int)(command - CmdActionFirst);
-                if (index < actions.Count)
-                    actions[index].RunAction();
-            }
-        }
-
-        private static void AppendMenuItem(IntPtr menu, uint position, uint id, string text, IntPtr bitmap)
-        {
-            var info = CreateMenuItemInfo();
-            info.fMask = MIIM_ID | MIIM_STRING;
-            if (bitmap != IntPtr.Zero)
-                info.fMask |= MIIM_BITMAP;
-            info.wID = id;
-            info.dwTypeData = text;
-            info.hbmpItem = bitmap;
-            InsertMenuItemW(menu, position, true, ref info);
-        }
-
-        private static void AppendSubMenu(IntPtr menu, uint position, IntPtr submenu, string text)
-        {
-            var info = CreateMenuItemInfo();
-            info.fMask = MIIM_SUBMENU | MIIM_STRING;
-            info.hSubMenu = submenu;
-            info.dwTypeData = text;
-            InsertMenuItemW(menu, position, true, ref info);
-        }
-
-        private static void AppendSeparator(IntPtr menu, uint position)
-        {
-            var info = CreateMenuItemInfo();
-            info.fMask = MIIM_FTYPE;
-            info.fType = MFT_SEPARATOR;
-            InsertMenuItemW(menu, position, true, ref info);
-        }
-
-        private static MENUITEMINFO CreateMenuItemInfo()
-        {
-            var info = new MENUITEMINFO();
-            info.cbSize = (uint)Marshal.SizeOf(typeof(MENUITEMINFO));
-            return info;
-        }
-
-        // 16x16, premultiplied 32-bpp ARGB: menu item bitmaps (hbmpItem) only
-        // render with correct transparency when supplied as PARGB DIB sections.
-        private static IntPtr CreateMenuBitmap(Bitmap icon)
-        {
-            try
-            {
-                using (var bitmap = new Bitmap(16, 16, PixelFormat.Format32bppArgb))
-                {
-                    using (var graphics = Graphics.FromImage(bitmap))
-                    {
-                        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        if (icon != null)
-                            graphics.DrawImage(icon, new Rectangle(0, 0, 16, 16));
-                        else
-                            graphics.DrawIcon(SystemIcons.Application, new Rectangle(0, 0, 16, 16));
-                    }
-                    return CreatePremultipliedAlphaBitmap(bitmap);
-                }
+                    Source = bs,
+                    Width = 16,
+                    Height = 16,
+                    Stretch = Stretch.Uniform
+                };
             }
             catch
             {
-                return IntPtr.Zero; // a broken icon must not break the menu
+                return null;
             }
-        }
-
-        private static IntPtr CreatePremultipliedAlphaBitmap(Bitmap source)
-        {
-            var bounds = new Rectangle(0, 0, source.Width, source.Height);
-            var data = source.LockBits(bounds, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            try
-            {
-                var info = new BITMAPINFO();
-                info.bmiHeader.biSize = (uint)Marshal.SizeOf(typeof(BITMAPINFOHEADER));
-                info.bmiHeader.biWidth = source.Width;
-                info.bmiHeader.biHeight = -source.Height; // top-down rows
-                info.bmiHeader.biPlanes = 1;
-                info.bmiHeader.biBitCount = 32;
-                info.bmiHeader.biCompression = BI_RGB;
-
-                IntPtr hBitmap = CreateDIBSection(IntPtr.Zero, ref info, DIB_RGB_COLORS, out IntPtr bits, IntPtr.Zero, 0);
-                if (hBitmap == IntPtr.Zero)
-                    return IntPtr.Zero;
-
-                int byteCount = source.Width * source.Height * 4;
-                var pixels = new byte[byteCount];
-                Marshal.Copy(data.Scan0, pixels, 0, byteCount);
-                for (int i = 0; i < byteCount; i += 4)
-                {
-                    byte alpha = pixels[i + 3];
-                    pixels[i] = (byte)(pixels[i] * alpha / 255);         // B
-                    pixels[i + 1] = (byte)(pixels[i + 1] * alpha / 255); // G
-                    pixels[i + 2] = (byte)(pixels[i + 2] * alpha / 255); // R
-                }
-                Marshal.Copy(pixels, 0, bits, byteCount);
-                return hBitmap;
-            }
-            finally
-            {
-                source.UnlockBits(data);
-            }
-        }
-
-        private IntPtr GetMessageWindowHandle()
-        {
-            // The library's message window is internal; reach it via reflection
-            // (library version is pinned to 1.1.0).
-            var sink = typeof(TaskbarIcon).GetField("messageSink", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(_trayMenu);
-            var handle = sink?.GetType().GetProperty("MessageWindowHandle",
-                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)?.GetValue(sink);
-            return handle is IntPtr ptr ? ptr : IntPtr.Zero;
         }
 
         // --- Native tray tooltip ----------------------------------------------
@@ -323,7 +265,7 @@ namespace AutoActions
             }
         }
 
-        // --- Win32 interop -----------------------------------------------------
+        // --- Win32 interop (cursor position only) ----------------------------
 
         [StructLayout(LayoutKind.Sequential)]
         private struct POINT
@@ -332,87 +274,8 @@ namespace AutoActions
             public int Y;
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private struct MENUITEMINFO
-        {
-            public uint cbSize;
-            public uint fMask;
-            public uint fType;
-            public uint fState;
-            public uint wID;
-            public IntPtr hSubMenu;
-            public IntPtr hbmpChecked;
-            public IntPtr hbmpUnchecked;
-            public IntPtr dwItemData;
-            [MarshalAs(UnmanagedType.LPTStr)]
-            public string dwTypeData;
-            public uint cch;
-            public IntPtr hbmpItem;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct BITMAPINFOHEADER
-        {
-            public uint biSize;
-            public int biWidth;
-            public int biHeight;
-            public ushort biPlanes;
-            public ushort biBitCount;
-            public uint biCompression;
-            public uint biSizeImage;
-            public int biXPelsPerMeter;
-            public int biYPelsPerMeter;
-            public uint biClrUsed;
-            public uint biClrImportant;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct BITMAPINFO
-        {
-            public BITMAPINFOHEADER bmiHeader;
-            public uint bmiColors; // placeholder RGBQUAD for structure alignment
-        }
-
-        private const uint MIIM_ID = 0x2;
-        private const uint MIIM_SUBMENU = 0x4;
-        private const uint MIIM_STRING = 0x40;
-        private const uint MIIM_BITMAP = 0x80;
-        private const uint MIIM_FTYPE = 0x100;
-        private const uint MFT_SEPARATOR = 0x1;
-        private const uint TPM_LEFTALIGN = 0x0;
-        private const uint TPM_RIGHTBUTTON = 0x2;
-        private const uint TPM_BOTTOMALIGN = 0x20;
-        private const uint TPM_RETURNCMD = 0x100;
-        private const uint WM_NULL = 0x0;
-        private const uint BI_RGB = 0;
-        private const uint DIB_RGB_COLORS = 0;
-
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
-        private static extern IntPtr CreatePopupMenu();
-
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
-        private static extern bool InsertMenuItemW(IntPtr menu, uint position, bool byPosition, ref MENUITEMINFO info);
-
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
-        private static extern int TrackPopupMenuEx(IntPtr menu, uint flags, int x, int y, IntPtr window, IntPtr parameters);
-
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
-        private static extern bool DestroyMenu(IntPtr menu);
-
-        [DllImport("user32.dll", ExactSpelling = true)]
-        private static extern bool SetForegroundWindow(IntPtr window);
-
         [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
         private static extern bool GetCursorPos(out POINT point);
-
-        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
-        private static extern bool PostMessageW(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
-        private static extern IntPtr CreateDIBSection(IntPtr hdc, ref BITMAPINFO info, uint usage, out IntPtr bits, IntPtr section, uint offset);
-
-        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
-        private static extern bool DeleteObject(IntPtr hObject);
 
         // --- Power mode --------------------------------------------------------
 

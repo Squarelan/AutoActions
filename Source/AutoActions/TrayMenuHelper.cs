@@ -1,8 +1,11 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
+using Hardcodet.Wpf.TaskbarNotification.Interop;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -63,14 +66,16 @@ namespace AutoActions
                 contextMenu.Items.Add(_closeButton);
                 _trayMenu.ContextMenu = contextMenu;
                 _trayMenu.TrayLeftMouseDown += TrayMenu_TrayLeftMouseDown;
+                _trayMenu.PreviewTrayToolTipOpen += TrayMenu_PreviewTrayToolTipOpen;
+                ApplyNativeTrayToolTip();
                 CallNewLog("Tray menu initialized");
                 SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
 
 
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw; // rethrow without resetting the stack trace
             }
 
         }
@@ -176,7 +181,7 @@ namespace AutoActions
         }
 
 
-        private void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        private async void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
             if (e.Mode == PowerModes.Suspend)
             {
@@ -184,7 +189,10 @@ namespace AutoActions
             }
             else if (e.Mode == PowerModes.Resume)
             {
-                System.Threading.Thread.Sleep(5000);
+                // Give the shell time to settle before re-adding the icon, but
+                // asynchronously — this event arrives on the UI thread, and
+                // blocking here froze the whole interface for the wait duration.
+                await System.Threading.Tasks.Task.Delay(5000);
                 SwitchTrayIcon(true);
             }
         }
@@ -196,6 +204,54 @@ namespace AutoActions
 
         }
 
+        private void TrayMenu_PreviewTrayToolTipOpen(object sender, RoutedEventArgs e)
+        {
+            // The library's WPF tooltip has no placement anchor and only closes when
+            // Explorer sends NIN_POPUPCLOSE. If that message is lost (mouse leaves the
+            // icon quickly, Explorer hiccup), the tooltip stays on screen forever,
+            // typically pinned to the top-left corner. Never open it — the hover name
+            // is shown by the shell-rendered native tooltip instead (see below).
+            e.Handled = true;
+            ApplyNativeTrayToolTip();
+        }
+
+        // Shell_NotifyIcon is not exposed by the tray library (its Util wrapper is
+        // internal), so declare it here. NotifyIconData is the library's public,
+        // already-marshaled struct.
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool Shell_NotifyIcon(uint dwMessage, ref NotifyIconData lpData);
+
+        private const uint NIM_MODIFY = 0x1;
+
+        /// <summary>
+        /// Registers the icon's hover text as a shell-rendered native tooltip
+        /// (NIM_MODIFY with NIF_TIP + NIF_SHOWTIP). NIF_SHOWTIP is cleared by every
+        /// subsequent Shell_NotifyIcon call, so it must be re-applied after the icon
+        /// is (re-)added: startup, resume from standby, taskbar restart.
+        /// </summary>
+        private void ApplyNativeTrayToolTip()
+        {
+            try
+            {
+                var iconDataField = typeof(TaskbarIcon).GetField("iconData", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (iconDataField == null)
+                {
+                    CallNewLog("Native tray tooltip: iconData field not found (library version changed?)");
+                    return;
+                }
+                // NotifyIconData is a struct — this is a copy, so the library's own
+                // state is left untouched.
+                var data = (NotifyIconData)iconDataField.GetValue(_trayMenu);
+                data.ToolTipText = ProjectLocales.AutoActions;
+                data.ValidMembers = IconDataMembers.Tip | IconDataMembers.UseLegacyToolTips;
+                Shell_NotifyIcon(NIM_MODIFY, ref data);
+            }
+            catch (Exception ex)
+            {
+                CallNewLog($"Applying native tray tooltip failed: {ex.Message}");
+            }
+        }
+
         private void CallNewLog(string message)
         {
             NewLog?.Invoke(this, message);
@@ -204,6 +260,8 @@ namespace AutoActions
         public void SwitchTrayIcon(bool showTray)
         {
             _trayMenu.Visibility = showTray ? System.Windows.Visibility.Visible : Visibility.Hidden;
+            if (showTray)
+                ApplyNativeTrayToolTip();
         }
 
     }

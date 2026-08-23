@@ -117,8 +117,19 @@ namespace AutoActions
         {
             while (!_stopRequested)
             {
-                lock (_applicationsLock)
-                    UpdateApplications();
+                // A transient failure (e.g. a process exiting mid-enumeration, or the
+                // foreground window disappearing behind the secure desktop) must never
+                // escape this loop — an unhandled exception on a background thread
+                // silently terminates the entire process.
+                try
+                {
+                    lock (_applicationsLock)
+                        UpdateApplications();
+                }
+                catch (Exception ex)
+                {
+                    CallNewLog($"Process watcher iteration failed: {ex.Message}");
+                }
                 Thread.Sleep(Globals.GlobalRefreshInterval);
             }
         }
@@ -138,6 +149,9 @@ namespace AutoActions
                 List<ApplicationItem> applications = _applications.Select(a => a.Key).ToList();
 
                 Process[] processes = Process.GetProcesses();
+                // Resolve the foreground process once per round and compare PIDs —
+                // this avoids re-creating Process objects for every watched entry.
+                int foregroundProcessId = GetForegroundProcessId();
 
                 foreach (ApplicationItem application in applications)
                 {
@@ -164,7 +178,7 @@ namespace AutoActions
 
                             if (oldState == ApplicationState.None)
                                 callNewRunning = true;
-                            if (IsFocusedApplication(process))
+                            if (process.Id == foregroundProcessId)
                             {
                                 state = ApplicationState.Focused;
                                 if (oldState != ApplicationState.Focused)
@@ -191,43 +205,74 @@ namespace AutoActions
                     if (callClosed)
                         CallApplicationChanged(application, ApplicationChangedType.Closed);
                 }
+
+                // GetProcesses() hands out disposable objects; without this the
+                // watcher leaked a few hundred handles per round until the GC ran.
+                foreach (var process in processes)
+                    process.Dispose();
             }
         }
 
-        private bool IsFocusedApplication(Process process)
+        /// <summary>
+        /// Returns the process ID of the foreground application, resolving UWP apps
+        /// hosted by ApplicationFrameHost to their real child process. Returns -1
+        /// when there is no usable foreground window (secure desktop on lock
+        /// screen/UAC, transient states while windows switch, or the process dying
+        /// mid-lookup) — callers treat -1 as "nothing focused".
+        /// </summary>
+        private int GetForegroundProcessId()
         {
-            Process currentProcess = GetForegroundProcess();
-            if (currentProcess == null)
-                return false;
-            return process.Id.Equals(currentProcess.Id);
-        }
-
-
-        private Process GetForegroundProcess()
-        {
-            var foregroundProcess = Process.GetProcessById(WinAPIFunctions.GetWindowProcessId(WinAPIFunctions.GetforegroundWindow()));
-            if (foregroundProcess.ProcessName == "ApplicationFrameHost")
+            try
             {
-                foregroundProcess = GetRealProcess(foregroundProcess);
-            }
-            return foregroundProcess;
-        }
+                IntPtr foregroundWindow = WinAPIFunctions.GetforegroundWindow();
+                if (foregroundWindow == IntPtr.Zero)
+                    return -1;
 
-        private Process GetRealProcess(Process foregroundProcess)
-        {
-            Process realActiveProcess = null;
+                int processId = WinAPIFunctions.GetWindowProcessId(foregroundWindow);
+                if (GetProcessNameById(processId) != "ApplicationFrameHost")
+                    return processId;
 
-            WinAPIFunctions.WindowEnumProc callback = (hwnd, lparam) =>
-            {
-                var process = Process.GetProcessById(WinAPIFunctions.GetWindowProcessId(hwnd));
-                if (process.ProcessName != "ApplicationFrameHost")
+                int realProcessId = -1;
+                WinAPIFunctions.WindowEnumProc callback = (hwnd, lparam) =>
                 {
-                    realActiveProcess = process;
+                    int childProcessId = WinAPIFunctions.GetWindowProcessId(hwnd);
+                    if (childProcessId > 0 && GetProcessNameById(childProcessId) != "ApplicationFrameHost")
+                    {
+                        realProcessId = childProcessId;
+                        return false; // first non-host child is the real UWP process
+                    }
+                    return true;
+                };
+                using (var hostProcess = Process.GetProcessById(processId))
+                {
+                    WinAPIFunctions.EnumChildWindows(hostProcess.MainWindowHandle, callback, IntPtr.Zero);
                 }
-                return true;
-            };
-            WinAPIFunctions.EnumChildWindows(foregroundProcess.MainWindowHandle, callback, IntPtr.Zero);
-            return realActiveProcess;
+                return realProcessId != -1 ? realProcessId : processId;
+            }
+            catch (Exception)
+            {
+                // The foreground process can exit between window lookup and here;
+                // report "nothing focused" for this round instead of crashing.
+                return -1;
+            }
         }
+
+        private static string GetProcessNameById(int processId)
+        {
+            if (processId <= 0)
+                return string.Empty;
+            try
+            {
+                using (var process = Process.GetProcessById(processId))
+                    return process.ProcessName;
+            }
+            catch (ArgumentException)
+            {
+                // Process already exited.
+                return string.Empty;
+            }
+        }
+
+
     }
 }

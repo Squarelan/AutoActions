@@ -395,7 +395,7 @@
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
     <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI" />
     <Setter Property="FontSize" Value="14" />
-    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="Padding" Value="10,8" />
     <Setter Property="MinHeight" Value="36" />
     <Setter Property="Template">
       <Setter.Value>
@@ -403,7 +403,7 @@
           <Grid Background="Transparent">
             <!-- Rounded hover/selection highlight -->
             <Border x:Name="PART_Hover" Background="Transparent" CornerRadius="4" Margin="2,1" />
-            <Grid>
+            <Grid Margin="0,0,0,0">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <!-- icon -->
@@ -412,19 +412,29 @@
                 <ColumnDefinition Width="Auto" />
                 <!-- submenu arrow -->
               </Grid.ColumnDefinitions>
-              <ContentPresenter x:Name="Icon" Grid.Column="0" Content="{TemplateBinding Icon}" ContentSource="Icon" Margin="0,0,10,0" VerticalAlignment="Center" Width="16" Height="16" />
+              <!-- Icon: when no icon is set the ContentPresenter
+                                 is empty so the column auto-sizes to 0 and the
+                                 text sits flush-left (aligned with no-icon items
+                                 like Shutdown). When an icon exists it gets a
+                                 12px left margin + 8px right gap. -->
+              <ContentPresenter x:Name="Icon" Grid.Column="0" Content="{TemplateBinding Icon}" ContentSource="Icon" Margin="12,0,8,0" VerticalAlignment="Center" Width="16" Height="16" />
               <ContentPresenter Grid.Column="1" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" VerticalAlignment="Center" RecognizesAccessKey="True" Margin="{TemplateBinding Padding}" />
               <!-- Submenu arrow: shown only when this item hosts a submenu -->
-              <Path x:Name="PART_SubmenuArrow" Grid.Column="2" Visibility="Collapsed" Fill="{DynamicResource GlyphBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,4,0" Data="M0,0 L6,5 L0,10 Z" />
+              <Path x:Name="PART_SubmenuArrow" Grid.Column="2" Visibility="Collapsed" Fill="{DynamicResource GlyphBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" Data="M0,0 L6,5 L0,10 Z" />
               <!-- Popup for submenu -->
               <Popup x:Name="PART_Popup" Placement="Right" AllowsTransparency="True" IsOpen="{TemplateBinding IsSubmenuOpen}" Focusable="False" PopupAnimation="Fade">
-                <Border Background="{StaticResource TrayMenuSurfaceBrush}" BorderBrush="{StaticResource TrayMenuBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="2" SnapsToDevicePixels="True">
+                <Border Background="{StaticResource TrayMenuSurfaceBrush}" BorderBrush="{StaticResource TrayMenuBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="6" SnapsToDevicePixels="True">
                   <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
                 </Border>
               </Popup>
             </Grid>
           </Grid>
           <ControlTemplate.Triggers>
+            <!-- No icon set: collapse the icon column entirely so
+                             text is not pushed right by an empty 16px placeholder. -->
+            <Trigger Property="Icon" Value="{x:Null}">
+              <Setter TargetName="Icon" Property="Visibility" Value="Collapsed" />
+            </Trigger>
             <!-- Show arrow + don't toggle popup for items that have a submenu -->
             <Trigger Property="HasItems" Value="True">
               <Setter TargetName="PART_SubmenuArrow" Property="Visibility" Value="Visible" />
